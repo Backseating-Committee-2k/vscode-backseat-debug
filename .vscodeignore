@@ -1,0 +1,11 @@
+.vscode/**/*
+.gitignore
+src/**/*
+out/tests/**/*
+**/*.js.map
+build
+sampleworkspace
+node_modules
+tsconfig.json
+out
+sampleWorkspace

@@ -1,0 +1,164 @@
+{
+    "name": "backseat-debug",
+    "displayName": "Backseat Debug",
+    "version": "0.0.1",
+    "publisher": "thejp",
+    "description": "Debug Extension for debugging backseat (.bs) and bssembler (.bsm) applications.",
+    "author": {
+        "name": "Janis Peyer"
+    },
+    "license": "MIT",
+    "keywords": [
+        "backseat bssembler bs bsm backseatsafesystem"
+    ],
+    "engines": {
+        "vscode": "^1.66.0"
+    },
+    "categories": [
+        "Debuggers"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TheJP/vscode-backseat-debug.git"
+    },
+    "bugs": {
+        "url": "https://github.com/TheJP/vscode-backseat-debug/issues"
+    },
+    "scripts": {
+        "compile": "tsc -p ./",
+        "lint": "eslint src --ext ts",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "esbuild-base": "esbuild ./src/extension.ts --bundle --tsconfig=./tsconfig.json --external:vscode --format=cjs --platform=node --outfile=dist/extension.js",
+        "watch": "npm run -S esbuild-base -- --sourcemap --sources-content=false --watch",
+        "build": "npm run -S esbuild-base -- --sourcemap --sources-content=false",
+        "package": "vsce package",
+        "publish": "vsce publish",
+        "publish-pre-release": "vsce publish --pre-release",
+        "vscode:prepublish": "rimraf dist && npm run -S esbuild-base -- --minify",
+        "test": "npm run typecheck"
+    },
+    "devDependencies": {
+        "@types/node": "^14.14.37",
+        "@types/vscode": "^1.66.0",
+        "@typescript-eslint/eslint-plugin": "^5.17.0",
+        "@typescript-eslint/parser": "^5.17.0",
+        "@vscode/debugadapter": "^1.56.0",
+        "@vscode/debugadapter-testsupport": "^1.56.0",
+        "await-notify": "^1.0.1",
+        "esbuild": "^0.14.29",
+        "eslint": "^8.12.0",
+        "typescript": "^4.6.3",
+        "rimraf": "^3.0.2",
+        "vsce": "^2.7.0"
+    },
+    "main": "./dist/extension.js",
+    "activationEvents": [
+        "onDebugResolve:bssembler",
+        "onCommand:extension.backseat-debug.runEditorContents",
+        "onCommand:extension.backseat-debug.debugEditorContents"
+    ],
+    "contributes": {
+        "menus": {
+            "editor/title/run": [
+                {
+                    "command": "extension.backseat-debug.runEditorContents",
+                    "when": "resourceLangId == bssembler",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "extension.backseat-debug.debugEditorContents",
+                    "when": "resourceLangId == bssembler",
+                    "group": "navigation@2"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "extension.backseat-debug.runEditorContents",
+                    "when": "resourceLangId == bssembler"
+                },
+                {
+                    "command": "extension.backseat-debug.debugEditorContents",
+                    "when": "resourceLangId == bssembler"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "extension.backseat-debug.runEditorContents",
+                "title": "Run File",
+                "category": "Backseat Debug",
+                "enablement": "!inDebugMode",
+                "icon": "$(play)"
+            },
+            {
+                "command": "extension.backseat-debug.debugEditorContents",
+                "title": "Debug File",
+                "category": "Backseat Debug",
+                "enablement": "!inDebugMode",
+                "icon": "$(debug-alt)"
+            }
+        ],
+        "breakpoints": [
+            {
+                "language": "bssembler"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "bssembler",
+                "languages": [
+                    "bssembler"
+                ],
+                "label": "Bssembler Debug",
+                "program": "./out/debugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path to the bssembler file.",
+                                "default": "^\"\\${file}\""
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": false
+                            },
+                            "trace": {
+                                "type": "boolean",
+                                "description": "Enable logging of the Debug Adapter Protocol.",
+                                "default": false
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "bssembler",
+                        "request": "launch",
+                        "name": "Current File",
+                        "program": "^\"\\${file}\"",
+                        "stopOnEntry": false
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Bssembler Debug: Launch",
+                        "description": "A new configuration for debugging bssembler files.",
+                        "body": {
+                            "type": "bssembler",
+                            "request": "launch",
+                            "name": "Ask for file name",
+                            "program": "^\"\\${file}\"",
+                            "stopOnEntry": false
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
