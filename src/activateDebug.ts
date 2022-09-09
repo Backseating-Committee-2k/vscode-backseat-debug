@@ -8,7 +8,7 @@ import { FileAccessor } from './bssemblerRuntime';
 export function activateDebug(context: vscode.ExtensionContext) {
     registerCommands(context);
 
-    const factory = new InlineDebugAdapterFactory();
+    const factory = new InlineDebugAdapterFactory(context);
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('bssembler', factory));
     if ('dispose' in factory) {
         context.subscriptions.push(factory);
@@ -69,7 +69,9 @@ export function activateDebug(context: vscode.ExtensionContext) {
     // }));
 }
 
-export const workspaceFileAccessor: FileAccessor = {
+class WorkspaceFileAccessor implements FileAccessor {
+    constructor(private context: vscode.ExtensionContext) {}
+
     async readFile(path: string): Promise<Uint8Array> {
         let uri: vscode.Uri;
         try {
@@ -79,11 +81,16 @@ export const workspaceFileAccessor: FileAccessor = {
         }
 
         return await vscode.workspace.fs.readFile(uri);
-    },
+    }
+
     async writeFile(path: string, contents: Uint8Array) {
         await vscode.workspace.fs.writeFile(pathToUri(path), contents);
     }
-};
+
+    extensionPath(path: string): string {
+        return this.context.asAbsolutePath(path);
+    }
+}
 
 function pathToUri(path: string) {
     try {
@@ -135,7 +142,9 @@ function registerCommands(context: vscode.ExtensionContext) {
 }
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
+    constructor(private context: vscode.ExtensionContext) {}
+
     createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new BssemblerDebugSession(workspaceFileAccessor));
+        return new vscode.DebugAdapterInlineImplementation(new BssemblerDebugSession(new WorkspaceFileAccessor(this.context)));
     }
 }

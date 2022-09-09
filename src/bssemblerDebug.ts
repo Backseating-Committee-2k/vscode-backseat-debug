@@ -9,7 +9,7 @@ import {
     LoggingDebugSession,
     InitializedEvent, Scope, Handles} from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { FileAccessor } from './bssemblerRuntime';
+import { BssemblerRuntime, FileAccessor } from './bssemblerRuntime';
 import { Subject } from 'await-notify';
 
 /**
@@ -33,6 +33,8 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 // interface IAttachRequestArguments extends ILaunchRequestArguments { }
 
 export class BssemblerDebugSession extends LoggingDebugSession {
+    private _runtime: BssemblerRuntime;
+
     private _configurationDone = new Subject();
 
     private _variableHandles = new Handles<'registers'>();
@@ -50,6 +52,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         // this debugger uses zero-based lines and columns
         this.setDebuggerLinesStartAt1(false);
         this.setDebuggerColumnsStartAt1(false);
+
+        this._runtime = new BssemblerRuntime(fileAccessor);
     }
 
     /**
@@ -144,9 +148,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         // wait 1 second until configuration has finished (and configurationDoneRequest has been called)
         await this._configurationDone.wait(1000);
 
-        // TODO:
         // start the program in the runtime
-        // await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug);
+        await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug);
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {
