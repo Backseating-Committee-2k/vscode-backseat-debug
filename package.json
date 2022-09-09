@@ -58,6 +58,14 @@
         "onCommand:extension.backseat-debug.debugEditorContents"
     ],
     "contributes": {
+        "languages": [
+            {
+                "id": "bssembler",
+                "extensions": [
+                    ".bsm"
+                ]
+            }
+        ],
         "menus": {
             "editor/title/run": [
                 {

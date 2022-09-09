@@ -82,7 +82,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
         // make VS Code support completion in REPL
         response.body.supportsCompletionsRequest = false;
-        response.body.completionTriggerCharacters = [ ".", "[" ];
+        // response.body.completionTriggerCharacters = [ ".", "[" ];
 
         // make VS Code send cancel request
         response.body.supportsCancelRequest = false;
@@ -137,7 +137,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this._configurationDone.notify();
     }
 
-    protected async launchRequest(response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments) {
+    protected async launchRequest(_response: DebugProtocol.LaunchResponse, args: ILaunchRequestArguments) {
         // make sure to 'Stop' the buffered logging if 'trace' is not set
         logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
 
