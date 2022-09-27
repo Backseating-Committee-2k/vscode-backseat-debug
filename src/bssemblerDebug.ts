@@ -5,9 +5,10 @@
  */
 
 import {
-    Logger, logger,
+    Breakpoint, Logger, logger,
     LoggingDebugSession,
-    InitializedEvent, Scope, Handles} from '@vscode/debugadapter';
+    InitializedEvent, Scope, Handles, Thread
+} from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { BssemblerRuntime, FileAccessor } from './bssemblerRuntime';
 import { Subject } from 'await-notify';
@@ -33,6 +34,9 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 // interface IAttachRequestArguments extends ILaunchRequestArguments { }
 
 export class BssemblerDebugSession extends LoggingDebugSession {
+    // we don't support multiple threads, so we can use a hardcoded ID for the default thread
+    private static threadID = 1;
+
     private _runtime: BssemblerRuntime;
 
     private _configurationDone = new Subject();
@@ -50,7 +54,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         super();
 
         // this debugger uses zero-based lines and columns
-        this.setDebuggerLinesStartAt1(false);
+        this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
 
         this._runtime = new BssemblerRuntime(fileAccessor);
@@ -158,6 +162,33 @@ export class BssemblerDebugSession extends LoggingDebugSession {
                 new Scope("Registers", this._variableHandles.create('registers'), false)
             ]
         };
+        this.sendResponse(response);
+    }
+
+    protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
+        response.body = {
+            threads: [
+                new Thread(BssemblerDebugSession.threadID, "thread 1"),
+                new Thread(BssemblerDebugSession.threadID + 1, "thread 2"),
+            ]
+        };
+        this.sendResponse(response);
+    }
+
+    protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
+        const path = args.source.path as string;
+        const clientLines = args.lines || [];
+
+        const debuggerLines = clientLines.map(line => this.convertClientLineToDebugger(line));
+        const debuggerBreakpoints = await this._runtime.setBreakpoints(path, debuggerLines);
+        const breakpoints = debuggerBreakpoints.map((debuggerBreakpoint) => {
+            const line = this.convertDebuggerLineToClient(debuggerBreakpoint.line);
+            const breakpoint = new Breakpoint(true, line);
+            breakpoint.setId(debuggerBreakpoint.id);
+            return breakpoint;
+        });
+
+        response.body = { breakpoints };
         this.sendResponse(response);
     }
 }
