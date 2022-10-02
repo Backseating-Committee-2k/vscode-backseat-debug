@@ -7,11 +7,12 @@
 import {
     Breakpoint, Logger, logger,
     LoggingDebugSession,
-    InitializedEvent, Scope, Handles, Thread
+    InitializedEvent, Scope, Handles, Thread, StoppedEvent, StackFrame, Source
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { BssemblerRuntime, FileAccessor } from './bssemblerRuntime';
+import { BssemblerRuntime, FileAccessor, RuntimeBreakpoint } from './bssemblerRuntime';
 import { Subject } from 'await-notify';
+import { basename } from 'path';
 
 /**
  * This interface describes the bssembler-debug specific launch attributes
@@ -43,9 +44,6 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
     private _variableHandles = new Handles<'registers'>();
 
-    private _useInvalidatedEvent = false;
-    private _reportProgress = false;
-
     /**
      * Creates a new debug adapter that is used for one debug session.
      * We configure the default implementation of a debug adapter here.
@@ -58,6 +56,12 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this.setDebuggerColumnsStartAt1(false);
 
         this._runtime = new BssemblerRuntime(fileAccessor);
+
+        this._runtime.on('stop-on-breakpoint', _ =>
+            this.sendEvent(new StoppedEvent('breakpoint', BssemblerDebugSession.threadID)));
+
+        this._runtime.on('stop-on-step', _ =>
+            this.sendEvent(new StoppedEvent('step', BssemblerDebugSession.threadID)));
     }
 
     /**
@@ -65,66 +69,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
      * to interrogate the features the debug adapter provides.
      */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
-
-        if (args.supportsProgressReporting) {
-            this._reportProgress = true;
-        }
-        if (args.supportsInvalidatedEvent) {
-            this._useInvalidatedEvent = true;
-        }
-
         // build and return the capabilities of this debug adapter:
         response.body = response.body || {};
-
-        // the adapter implements the configurationDone request.
-        response.body.supportsConfigurationDoneRequest = false;
-
-        // make VS Code use 'evaluate' when hovering over source
-        response.body.supportsEvaluateForHovers = false;
-
-        // make VS Code show a 'step back' button
-        response.body.supportsStepBack = false;
-
-        // make VS Code support data breakpoints
-        response.body.supportsDataBreakpoints = false;
-
-        // make VS Code support completion in REPL
-        response.body.supportsCompletionsRequest = false;
-        // response.body.completionTriggerCharacters = [ ".", "[" ];
-
-        // make VS Code send cancel request
-        response.body.supportsCancelRequest = false;
-
-        // make VS Code send the breakpointLocations request
-        response.body.supportsBreakpointLocationsRequest = false;
-
-        // make VS Code provide "Step in Target" functionality
-        response.body.supportsStepInTargetsRequest = false;
-
-        // the adapter defines two exceptions filters, one with support for conditions.
-        response.body.supportsExceptionFilterOptions = false;
-
-        // make VS Code send exceptionInfo request
-        response.body.supportsExceptionInfoRequest = false;
-
-        // make VS Code send setVariable request
-        response.body.supportsSetVariable = false;
-
-        // make VS Code send setExpression request
-        response.body.supportsSetExpression = false;
-
-        // make VS Code send disassemble request
-        response.body.supportsDisassembleRequest = false;
-        response.body.supportsSteppingGranularity = false;
-        response.body.supportsInstructionBreakpoints = false;
-
-        // make VS Code able to read and write variable memory
-        response.body.supportsReadMemoryRequest = false;
-        response.body.supportsWriteMemoryRequest = false;
-
-        response.body.supportSuspendDebuggee = false;
-        response.body.supportTerminateDebuggee = false;
-        response.body.supportsFunctionBreakpoints = false;
 
         this.sendResponse(response);
 
@@ -168,8 +114,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
     protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
         response.body = {
             threads: [
-                new Thread(BssemblerDebugSession.threadID, "thread 1"),
-                new Thread(BssemblerDebugSession.threadID + 1, "thread 2"),
+                new Thread(BssemblerDebugSession.threadID, "Main Thread"),
             ]
         };
         this.sendResponse(response);
@@ -190,5 +135,40 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
         response.body = { breakpoints };
         this.sendResponse(response);
+    }
+
+    protected continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
+        this._runtime.continue();
+        this.sendResponse(response);
+    }
+
+    protected nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments): void {
+        this._runtime.step();
+        this.sendResponse(response);
+    }
+
+    protected stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments): void {
+        this._runtime.step();
+        this.sendResponse(response);
+    }
+
+    protected stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments): void {
+        this._runtime.step();
+        this.sendResponse(response);
+    }
+
+    protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
+        const location = this._runtime.getCurrentLocation();
+        response.body = {
+            stackFrames: [
+                new StackFrame(0, "Position", this.createSource(location.path), location.line),
+            ],
+            totalFrames: 1,
+        };
+        this.sendResponse(response);
+    }
+
+    private createSource(filePath: string): Source {
+        return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
     }
 }

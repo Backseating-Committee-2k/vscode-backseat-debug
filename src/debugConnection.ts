@@ -1,14 +1,17 @@
 import { EventEmitter } from 'events';
 import { Socket, createConnection } from 'net';
 
-const DEBUGGER_PORT = 3465;
+const DEBUGGER_PORT = 57017;
 
 export interface Breakpoints {
     locations: number[];
 }
 
-export type Request = SetBreakpoints | RemoveBreakpoints | ListBreakpoints;
+export type Request = StartExecution | Continue | StepOne |
+    SetBreakpoints | RemoveBreakpoints | ListBreakpoints;
 export type Address = number;
+
+export class StartExecution { }
 
 export class SetBreakpoints {
     // @ts-ignore Suppressing invalid "declared but never used". All fields are used by JSON.stringify.
@@ -20,7 +23,19 @@ export class RemoveBreakpoints {
     constructor(private readonly locations: Address[]) { }
 }
 
-export class ListBreakpoints {
+export class Continue { }
+export class StepOne { }
+
+export type Response = ListBreakpoints | HitBreakpoint | Breaking;
+
+export class ListBreakpoints { }
+
+export class HitBreakpoint {
+    constructor(public readonly location: Address) { }
+}
+
+export class Breaking {
+    constructor(public readonly location: Address) { }
 }
 
 export class DebugConnection extends EventEmitter {
@@ -43,7 +58,7 @@ export class DebugConnection extends EventEmitter {
                 debugConnection.clientError(error);
             });
 
-            client.on('data', debugConnection.clientData);
+            client.on('data', data => debugConnection.clientData(data));
         });
     }
 
@@ -85,9 +100,17 @@ export class DebugConnection extends EventEmitter {
     }
 
     private receivedMessage(message: string) {
-        // TODO
         const json = JSON.parse(message);
-        this.sendEvent('message-breakpoints', json['Breakpoints'] as Breakpoints);
+        const events = [
+            'HitBreakpoint',
+            'Breakpoints',
+            'Breaking'
+        ];
+        for (const event of events) {
+            if (json.hasOwnProperty(event)) {
+                this.sendEvent(`message-${event.toLowerCase()}`, json[event]);
+            }
+        }
     }
 
     private sendEvent(event: string, ...args: any[]): void {

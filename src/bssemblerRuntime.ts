@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { DebugConnection, SetBreakpoints } from './debugConnection';
+import { Breaking, Continue, DebugConnection, HitBreakpoint, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
 
 export interface FileAccessor {
     readFile(path: string): Promise<Uint8Array>;
@@ -20,6 +20,10 @@ export class RuntimeBreakpoint {
 
 class RuntimeBreakpoints {
     public readonly items = new Map<number, RuntimeBreakpoint>();
+}
+
+export class RuntimeLocation {
+    constructor(public readonly path: string, public readonly line: number) { }
 }
 
 class LineToInstructionMapper {
@@ -52,6 +56,12 @@ class LineToInstructionMapper {
 
         return undefined;
     }
+
+    public clear() {
+        this.lineToInstruction.clear();
+        this.instructionToLine.clear();
+        this.lines.splice(0, this.lines.length);
+    }
 }
 
 export class BssemblerRuntime extends EventEmitter {
@@ -61,6 +71,7 @@ export class BssemblerRuntime extends EventEmitter {
     private lineMapper = new LineToInstructionMapper();
 
     private currentProgram?: string;
+    private currentLine: number = 0;
     private debugConnection?: DebugConnection;
 
     constructor(private _fileAccessor: FileAccessor) {
@@ -71,7 +82,7 @@ export class BssemblerRuntime extends EventEmitter {
         // TODO: Send breakpoint updates to runtime if called while running.
 
         path = this.normalisePathAndCasing(path);
-        let breakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
+        let oldBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
 
         let newBreakpoints = new RuntimeBreakpoints();
         for (const line of breakpointLines) {
@@ -79,25 +90,34 @@ export class BssemblerRuntime extends EventEmitter {
                 continue; // Ignore duplicate lines.
             }
 
-            let breakpoint = breakpoints.items.get(line);
+            let breakpoint = oldBreakpoints.items.get(line);
             if (!breakpoint) {
                 breakpoint = new RuntimeBreakpoint(this.nextBreakpointId, line);
                 ++this.nextBreakpointId;
             } else {
-                breakpoints.items.delete(line);
+                oldBreakpoints.items.delete(line);
             }
 
             newBreakpoints.items.set(line, breakpoint);
         }
 
-        // TODO: Notify delete
-        // for (const [line, breakpoint] of breakpoints.items.entries()) {
-
-        // }
+        this.sendBreakpointUpdates(this.debugConnection, newBreakpoints.items.values(), oldBreakpoints.items.values());
 
         this.breakpoints.set(path, newBreakpoints);
 
         return [...newBreakpoints.items.values()];
+    }
+
+    public continue() {
+        this.debugConnection?.send(new Continue());
+    }
+
+    public step() {
+        this.debugConnection?.send(new StepOne());
+    }
+
+    public getCurrentLocation(): RuntimeLocation {
+        return new RuntimeLocation(this.currentProgram ?? '', this.currentLine);
     }
 
     /**
@@ -114,8 +134,10 @@ export class BssemblerRuntime extends EventEmitter {
         try {
             await this.bssemble(program, backseatPath, mapFilePath);
             await this.readMapFile(mapFilePath);
-            this.debugConnection = await DebugConnection.connect();
-            this.initialiseDebugger(stopOnEntry);
+            const debugConnection = await DebugConnection.connect();
+            this.listenToConnectionEvents(debugConnection);
+            this.initialiseDebugger(debugConnection, stopOnEntry);
+            this.debugConnection = debugConnection;
         } catch (error) {
             // TODO: Show errors to the user
             console.log(error);
@@ -127,16 +149,24 @@ export class BssemblerRuntime extends EventEmitter {
 
     private async bssemble(program: string, backseatPath: string, mapFilePath: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            let killed = false;
-
             const bssemblerPath = this._fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
             const bssemblerProcess = spawn(bssemblerPath, ['-m', mapFilePath, program]);
 
             const backseatStream = createWriteStream(backseatPath);
             bssemblerProcess.stdout.pipe(backseatStream);
 
+            let killed = false;
+
+            const timer = setTimeout(() => {
+                killed = true;
+                bssemblerProcess.kill();
+                backseatStream.close();
+                reject(new Error('bssembler process timed out'));
+            }, BSSEMBLE_TIMEOUT_MS);
+
             bssemblerProcess.on('close', code => {
                 if (!killed) {
+                    clearTimeout(timer);
                     backseatStream.close();
                     if (code === 0) {
                         resolve();
@@ -145,17 +175,11 @@ export class BssemblerRuntime extends EventEmitter {
                     }
                 }
             });
-
-            setTimeout(() => {
-                killed = true;
-                bssemblerProcess.kill();
-                backseatStream.close();
-                reject(new Error('bssembler process timed out'));
-            }, BSSEMBLE_TIMEOUT_MS);
         });
     }
 
     private async readMapFile(mapFilePath: string) {
+        this.lineMapper.clear();
         const contents = await readFile(mapFilePath, 'ascii');
         const lines = contents.split(/[\r\n]+/);
         lines.shift(); // Skip first line.
@@ -174,19 +198,61 @@ export class BssemblerRuntime extends EventEmitter {
         }
     }
 
-    private initialiseDebugger(stopOnEntry: boolean) {
-        const breakpoints = this.breakpoints.get(this.currentProgram ?? '');
-        if (this.currentProgram && breakpoints) {
-            const instructionBreakpoints: number[] = [];
-            for (const line of breakpoints.items.keys()) {
-                const instruction = this.lineMapper.convertLineToInstruction(line);
-                if (instruction) {
-                    // TODO: Verify breakpoints and move them down if possible.
-                    instructionBreakpoints.push(instruction ?? 0);
-                }
+    private listenToConnectionEvents(debugConnection: DebugConnection) {
+        debugConnection.on('message-hitbreakpoint', (event: HitBreakpoint) => {
+            const line = this.lineMapper.convertInstructionToLine(event.location);
+            const breakpoints = this.breakpoints.get(this.currentProgram ?? '');
+
+            if (!line || !this.currentProgram || !breakpoints) {
+                return;
             }
 
-            this.debugConnection?.send(new SetBreakpoints(instructionBreakpoints));
+            this.currentLine = line;
+            const breakpoint = breakpoints.items.get(line);
+
+            if (breakpoint) {
+                this.sendEvent('stop-on-breakpoint', breakpoint);
+            }
+        });
+
+        debugConnection.on('message-breaking', (event: Breaking) => {
+            const line = this.lineMapper.convertInstructionToLine(event.location);
+            if (line) {
+                this.currentLine = line;
+                this.sendEvent('stop-on-step', line);
+            }
+        });
+    }
+
+    private initialiseDebugger(debugConnection: DebugConnection, stopOnEntry: boolean) {
+        const breakpoints = this.breakpoints.get(this.currentProgram ?? '');
+        if (this.currentProgram && breakpoints) {
+            this.sendBreakpointUpdates(debugConnection, breakpoints.items.values(), undefined);
+        }
+
+        debugConnection.send(new StartExecution());
+    }
+
+    private sendBreakpointUpdates(debugConnection?: DebugConnection, setBreakpoints?: IterableIterator<RuntimeBreakpoint>, removeBreakpoints?: IterableIterator<RuntimeBreakpoint>) {
+        const extracAddresses = (breakpoints?: IterableIterator<RuntimeBreakpoint>) => {
+            const addresses: number[] = [];
+            for (const breakpoint of breakpoints ?? []) {
+                const address = this.lineMapper.convertLineToInstruction(breakpoint.line);
+                if (address) {
+                    addresses.push(address);
+                }
+            }
+            return addresses;
+        };
+
+        const set = extracAddresses(setBreakpoints);
+        if (set.length > 0) {
+            debugConnection?.send(new SetBreakpoints(set));
+        }
+
+        const remove = extracAddresses(removeBreakpoints);
+        if (remove.length > 0) {
+            debugConnection?.send(new RemoveBreakpoints(remove));
         }
     }
 
