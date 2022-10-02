@@ -7,7 +7,7 @@
 import {
     Breakpoint, Logger, logger,
     LoggingDebugSession,
-    InitializedEvent, Scope, Handles, Thread, StoppedEvent, StackFrame, Source
+    InitializedEvent, Scope, Handles, Thread, StoppedEvent, StackFrame, Source, TerminatedEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { BssemblerRuntime, FileAccessor, RuntimeBreakpoint } from './bssemblerRuntime';
@@ -62,6 +62,9 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
         this._runtime.on('stop-on-step', _ =>
             this.sendEvent(new StoppedEvent('step', BssemblerDebugSession.threadID)));
+
+        this._runtime.on('emulator-stopped', _ =>
+            this.sendEvent(new TerminatedEvent(false)));
     }
 
     /**
@@ -71,6 +74,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
         // build and return the capabilities of this debug adapter:
         response.body = response.body || {};
+
+        response.body.supportTerminateDebuggee = true;
 
         this.sendResponse(response);
 
@@ -100,6 +105,18 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
         // start the program in the runtime
         await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug);
+    }
+
+    protected terminateRequest(response: DebugProtocol.TerminateResponse, args: DebugProtocol.TerminateArguments, request?: DebugProtocol.Request) {
+        this._runtime.terminate();
+        this.sendResponse(response);
+    }
+
+    protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request | undefined): void {
+        if (args.terminateDebuggee) {
+            this._runtime.terminate();
+        }
+        this.sendResponse(response);
     }
 
     protected scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments): void {

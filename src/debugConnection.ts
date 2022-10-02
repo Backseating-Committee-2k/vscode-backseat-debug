@@ -1,8 +1,6 @@
 import { EventEmitter } from 'events';
 import { Socket, createConnection } from 'net';
 
-const DEBUGGER_PORT = 57017;
-
 export interface Breakpoints {
     locations: number[];
 }
@@ -42,11 +40,11 @@ export class DebugConnection extends EventEmitter {
     private receiveBuffer = '';
     private client?: Socket;
 
-    public static connect(): Promise<DebugConnection> {
+    public static connect(port: number): Promise<DebugConnection> {
         return new Promise((resolve, reject) => {
             let connected = false;
             const debugConnection = new DebugConnection();
-            const client = createConnection({ port: DEBUGGER_PORT }, () => {
+            const client = createConnection({ port }, () => {
                 connected = true;
                 resolve(debugConnection);
             });

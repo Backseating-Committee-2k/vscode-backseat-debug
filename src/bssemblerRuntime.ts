@@ -1,9 +1,10 @@
 import { EventEmitter } from 'events';
-import { spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
 import { Breaking, Continue, DebugConnection, HitBreakpoint, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
+import { Readable } from 'stream';
 
 export interface FileAccessor {
     readFile(path: string): Promise<Uint8Array>;
@@ -12,7 +13,10 @@ export interface FileAccessor {
 }
 
 const LOCAL_BSSEMBLER_PATH = './bin/Upholsterer2k.exe';
+const LOCAL_EMULATOR_PATH = './bin/backseat_safe_system_2k.exe';
 const BSSEMBLE_TIMEOUT_MS = 2500;
+const EMULATOR_TIMEOUT_MS = 2500;
+const DEBUGGER_PORT_PREFIX = 'Debugger-Port:';
 
 export class RuntimeBreakpoint {
     constructor(public readonly id: number, public readonly line: number) { }
@@ -73,6 +77,7 @@ export class BssemblerRuntime extends EventEmitter {
     private currentProgram?: string;
     private currentLine: number = 0;
     private debugConnection?: DebugConnection;
+    private emulatorProcess?: ChildProcessWithoutNullStreams;
 
     constructor(private _fileAccessor: FileAccessor) {
         super();
@@ -134,17 +139,24 @@ export class BssemblerRuntime extends EventEmitter {
         try {
             await this.bssemble(program, backseatPath, mapFilePath);
             await this.readMapFile(mapFilePath);
-            const debugConnection = await DebugConnection.connect();
+            const port = await this.startEmulator(backseatPath);
+            const debugConnection = await DebugConnection.connect(port);
             this.listenToConnectionEvents(debugConnection);
             this.initialiseDebugger(debugConnection, stopOnEntry);
             this.debugConnection = debugConnection;
         } catch (error) {
+            this.emulatorProcess?.kill();
+            this.emulatorProcess = undefined;
             // TODO: Show errors to the user
             console.log(error);
         } finally {
             cleanupMapFile();
             cleanupBackseat();
         }
+    }
+
+    public terminate() {
+        this.emulatorProcess?.kill();
     }
 
     private async bssemble(program: string, backseatPath: string, mapFilePath: string): Promise<void> {
@@ -165,14 +177,16 @@ export class BssemblerRuntime extends EventEmitter {
             }, BSSEMBLE_TIMEOUT_MS);
 
             bssemblerProcess.on('close', code => {
-                if (!killed) {
-                    clearTimeout(timer);
-                    backseatStream.close();
-                    if (code === 0) {
-                        resolve();
-                    } else {
-                        reject(new Error('bssembler returned non-zero exit code'));
-                    }
+                if (killed) {
+                    return;
+                }
+
+                clearTimeout(timer);
+                backseatStream.close();
+                if (code === 0) {
+                    resolve();
+                } else {
+                    reject(new Error('bssembler returned non-zero exit code'));
                 }
             });
         });
@@ -196,6 +210,42 @@ export class BssemblerRuntime extends EventEmitter {
 
             this.lineMapper.set(line, instruction);
         }
+    }
+
+    private async startEmulator(backseatPath: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+            const emulatorPath = this._fileAccessor.extensionPath(LOCAL_EMULATOR_PATH);
+            this.emulatorProcess = spawn(emulatorPath, ['debug', backseatPath]);
+
+            let killed = false;
+
+            const timer = setTimeout(() => {
+                killed = true;
+                this.emulatorProcess?.kill();
+                reject(new Error('timed out on waiting for debugger port'));
+            }, EMULATOR_TIMEOUT_MS);
+
+            this.emulatorProcess.on('close', code => {
+                reject(new Error('emulator stopped')); // reject if still waiting for port
+                this.sendEvent('emulator-stopped', code);
+            });
+
+            this.streamLines(this.emulatorProcess.stdout, line => {
+                if (killed || !line.startsWith(DEBUGGER_PORT_PREFIX)) {
+                    return;
+                }
+
+                const port = parseInt(line.substring(DEBUGGER_PORT_PREFIX.length).trim());
+                if (port > 0) {
+                    clearTimeout(timer);
+                    resolve(port);
+                } else {
+                    killed = true;
+                    this.emulatorProcess?.kill();
+                    reject(new Error('emulator returned invalid debugger port'));
+                }
+            });
+        });
     }
 
     private listenToConnectionEvents(debugConnection: DebugConnection) {
@@ -254,6 +304,33 @@ export class BssemblerRuntime extends EventEmitter {
         if (remove.length > 0) {
             debugConnection?.send(new RemoveBreakpoints(remove));
         }
+    }
+
+    private streamLines(stream: Readable, lineCallback: (line: string) => void) {
+        let buffer = '';
+        stream.on('data', (chunk: Buffer) => {
+            const newData = chunk.toString('utf8');
+            const lines = newData.split(/[\r\n]+/);
+
+            if (lines.length > 1) {
+                const message = buffer + lines[0];
+                buffer = '';
+                setTimeout(() => lineCallback(message), 0);
+            }
+
+            for (let i = 1; i < lines.length - 1; ++i) {
+                const message = lines[i];
+                setTimeout(() => lineCallback(message), 0);
+            }
+
+            buffer = lines[lines.length - 1];
+        });
+
+        stream.on('end', () => {
+            if (buffer.length > 0) {
+                setTimeout(() => lineCallback(buffer), 0);
+            }
+        });
     }
 
     private sendEvent(event: string, ...args: any[]): void {
