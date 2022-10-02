@@ -14,6 +14,7 @@ export interface FileAccessor {
 
 const LOCAL_BSSEMBLER_PATH = './bin/Upholsterer2k.exe';
 const LOCAL_EMULATOR_PATH = './bin/backseat_safe_system_2k.exe';
+const LOCAL_FONT_FILE_PATH = './bin/CozetteVector.ttf';
 const BSSEMBLE_TIMEOUT_MS = 2500;
 const EMULATOR_TIMEOUT_MS = 2500;
 const DEBUGGER_PORT_PREFIX = 'Debugger-Port:';
@@ -228,7 +229,8 @@ export class BssemblerRuntime extends EventEmitter {
     private async startEmulator(backseatPath: string): Promise<number> {
         return new Promise((resolve, reject) => {
             const emulatorPath = this._fileAccessor.extensionPath(LOCAL_EMULATOR_PATH);
-            this.emulatorProcess = spawn(emulatorPath, ['debug', backseatPath]);
+            const fontPath = this._fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
+            this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
 
             let killed = false;
 
