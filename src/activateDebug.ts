@@ -1,5 +1,6 @@
 'use strict';
 
+import { TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { ProviderResult } from 'vscode';
 import { BssemblerDebugSession } from './bssemblerDebug';
@@ -8,7 +9,7 @@ import { FileAccessor } from './bssemblerRuntime';
 export function activateDebug(context: vscode.ExtensionContext) {
     registerCommands(context);
 
-    const factory = new InlineDebugAdapterFactory(context);
+    const factory: any = new InlineDebugAdapterFactory(context);
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('bssembler', factory));
     if ('dispose' in factory) {
         context.subscriptions.push(factory);
