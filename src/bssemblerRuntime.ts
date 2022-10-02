@@ -60,12 +60,6 @@ class LineToInstructionMapper {
 
         return undefined;
     }
-
-    public clear() {
-        this.lineToInstruction.clear();
-        this.instructionToLine.clear();
-        this.lines.splice(0, this.lines.length);
-    }
 }
 
 export class BssemblerRuntime extends EventEmitter {
@@ -84,8 +78,6 @@ export class BssemblerRuntime extends EventEmitter {
     }
 
     public async setBreakpoints(path: string, breakpointLines: number[]): Promise<RuntimeBreakpoint[]> {
-        // TODO: Send breakpoint updates to runtime if called while running.
-
         path = this.normalisePathAndCasing(path);
         let oldBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
 
@@ -139,6 +131,7 @@ export class BssemblerRuntime extends EventEmitter {
         try {
             await this.bssemble(program, backseatPath, mapFilePath);
             await this.readMapFile(mapFilePath);
+            this.validateBreakpoints();
             const port = await this.startEmulator(backseatPath);
             const debugConnection = await DebugConnection.connect(port);
             this.listenToConnectionEvents(debugConnection);
@@ -193,7 +186,6 @@ export class BssemblerRuntime extends EventEmitter {
     }
 
     private async readMapFile(mapFilePath: string) {
-        this.lineMapper.clear();
         const contents = await readFile(mapFilePath, 'ascii');
         const lines = contents.split(/[\r\n]+/);
         lines.shift(); // Skip first line.
@@ -209,6 +201,27 @@ export class BssemblerRuntime extends EventEmitter {
             }
 
             this.lineMapper.set(line, instruction);
+        }
+    }
+
+    private validateBreakpoints() {
+        const breakpoints = this.breakpoints.get(this.currentProgram || '');
+        if (!this.currentProgram || !breakpoints) {
+            return;
+        }
+
+        for (const breakpoint of [...breakpoints.items.values()]) {
+            const correctLine = this.lineMapper.getNextValidLine(breakpoint.line);
+            if (!correctLine) {
+                this.sendEvent('breakpoint-removed', breakpoint);
+                breakpoints.items.delete(breakpoint.line);
+            }
+            if (correctLine && correctLine !== breakpoint.line) {
+                breakpoints.items.delete(breakpoint.line);
+                const newBreakpoint = new RuntimeBreakpoint(breakpoint.id, correctLine);
+                breakpoints.items.set(correctLine, newBreakpoint);
+                this.sendEvent('breakpoint-changed', newBreakpoint);
+            }
         }
     }
 

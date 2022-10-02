@@ -7,7 +7,8 @@
 import {
     Breakpoint, Logger, logger,
     LoggingDebugSession,
-    InitializedEvent, Scope, Handles, Thread, StoppedEvent, StackFrame, Source, TerminatedEvent
+    InitializedEvent, Scope, Handles, Thread, StoppedEvent,
+    StackFrame, Source, TerminatedEvent, BreakpointEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { BssemblerRuntime, FileAccessor, RuntimeBreakpoint } from './bssemblerRuntime';
@@ -56,6 +57,16 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this.setDebuggerColumnsStartAt1(false);
 
         this._runtime = new BssemblerRuntime(fileAccessor);
+
+        this._runtime.on('breakpoint-changed', (breakpoint: RuntimeBreakpoint) => {
+            this.sendEvent(new BreakpointEvent('changed', {
+                id: breakpoint.id, line: breakpoint.line, verified: true,
+            } as DebugProtocol.Breakpoint));
+        });
+
+        this._runtime.on('breakpoint-removed', (breakpoint: RuntimeBreakpoint) => {
+            this.sendEvent(new BreakpointEvent('removed', { id: breakpoint.id } as DebugProtocol.Breakpoint));
+        });
 
         this._runtime.on('stop-on-breakpoint', _ =>
             this.sendEvent(new StoppedEvent('breakpoint', BssemblerDebugSession.threadID)));
