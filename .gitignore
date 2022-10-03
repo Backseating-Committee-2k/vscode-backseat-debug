@@ -8,3 +8,4 @@ mock-debug.txt
 .DS_Store
 
 *.backseat
+/bin/*.exe
