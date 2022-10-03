@@ -11,6 +11,9 @@ export function activateDebug(context: vscode.ExtensionContext) {
 
     const channel = vscode.window.createOutputChannel('Backseat Debug');
 
+    const provider = new BssemblerConfigurationProvider();
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('bssembler', provider));
+
     const factory: any = new InlineDebugAdapterFactory(context, channel);
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('bssembler', factory));
     if ('dispose' in factory) {
@@ -70,6 +73,34 @@ export function activateDebug(context: vscode.ExtensionContext) {
     //         return allValues;
     //     }
     // }));
+}
+
+class BssemblerConfigurationProvider implements vscode.DebugConfigurationProvider {
+    /**
+     * Massage a debug configuration just before a debug session is being launched,
+     * e.g. add all missing attributes to the debug configuration.
+     */
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken): ProviderResult<vscode.DebugConfiguration> {
+        // if launch.json is missing or empty
+        if (!config.type && !config.request && !config.name) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === 'bssembler') {
+                config.type = 'bssembler';
+                config.request = 'launch';
+                config.name = 'Current File';
+                config.program = '${file}';
+                config.stopOnEntry = true;
+            }
+        }
+
+        if (!config.program) {
+            return vscode.window.showInformationMessage("Cannot find a program to debug").then(_ => {
+                return undefined; // abort launch
+            });
+        }
+
+        return config;
+    }
 }
 
 class WorkspaceFileAccessor implements FileAccessor {
