@@ -1,7 +1,7 @@
 {
     "name": "backseat-debug",
     "displayName": "Backseat Debug",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "thejp",
     "description": "Debug Extension for debugging backseat (.bs) and bssembler (.bsm) applications.",
     "author": {
@@ -147,12 +147,18 @@
                                 "default": false
                             },
                             "bssemblerCommand": {
-                                "type": ["string", "null"],
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
                                 "description": "Command with arguments for external bssembler (typically Upholsterer2k).",
                                 "default": null
                             },
                             "emulatorCommand": {
-                                "type": ["string", "null"],
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
                                 "description": "Command with arguments for external emulator (typically BackseatSafeSystem2k).",
                                 "default": null
                             }
