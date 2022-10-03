@@ -71,7 +71,7 @@ export function activateDebug(context: vscode.ExtensionContext) {
 }
 
 class WorkspaceFileAccessor implements FileAccessor {
-    constructor(private context: vscode.ExtensionContext) {}
+    constructor(private context: vscode.ExtensionContext) { }
 
     async readFile(path: string): Promise<Uint8Array> {
         let uri: vscode.Uri;
@@ -134,7 +134,9 @@ function registerCommands(context: vscode.ExtensionContext) {
                         name: 'Debug File',
                         request: 'launch',
                         program: targetResource.fsPath,
-                        stopOnEntry: true
+                        stopOnEntry: true,
+                        bssemblerPath: null,
+                        emulatorPath: null,
                     }
                 );
             }
@@ -143,7 +145,7 @@ function registerCommands(context: vscode.ExtensionContext) {
 }
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
-    constructor(private context: vscode.ExtensionContext) {}
+    constructor(private context: vscode.ExtensionContext) { }
 
     createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
         return new vscode.DebugAdapterInlineImplementation(new BssemblerDebugSession(new WorkspaceFileAccessor(this.context)));

@@ -4,6 +4,7 @@
  * The most important class of the Debug Adapter is the BssemblerDebugSession which implements many DAP requests.
  */
 
+import * as vscode from 'vscode';
 import {
     Breakpoint, Logger, logger,
     LoggingDebugSession,
@@ -30,6 +31,10 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     trace?: boolean;
     /** run without debugging */
     noDebug?: boolean;
+    /** Command with arguments for external bssembler. */
+    bssemblerCommand?: string;
+    /** Command with arguments for external. */
+    emulatorCommand?: string;
 }
 
 // Not supporting attach currently.
@@ -76,6 +81,11 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
         this._runtime.on('emulator-stopped', _ =>
             this.sendEvent(new TerminatedEvent(false)));
+
+        this._runtime.on('error-on-start', error => {
+            this.sendEvent(new TerminatedEvent(false));
+            vscode.window.showErrorMessage(`Could not Launch Debugger: ${error}`);
+        });
     }
 
     /**
@@ -115,7 +125,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         await this._configurationDone.wait(1000);
 
         // start the program in the runtime
-        await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug);
+        await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug, args.bssemblerCommand, args.emulatorCommand);
     }
 
     protected terminateRequest(response: DebugProtocol.TerminateResponse, args: DebugProtocol.TerminateArguments, request?: DebugProtocol.Request) {

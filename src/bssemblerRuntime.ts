@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { ChildProcess, exec, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
@@ -72,7 +72,7 @@ export class BssemblerRuntime extends EventEmitter {
     private currentProgram?: string;
     private currentLine: number = 0;
     private debugConnection?: DebugConnection;
-    private emulatorProcess?: ChildProcessWithoutNullStreams;
+    private emulatorProcess?: ChildProcess;
 
     constructor(private _fileAccessor: FileAccessor) {
         super();
@@ -121,7 +121,12 @@ export class BssemblerRuntime extends EventEmitter {
     /**
      * Start executing the given program.
      */
-    public async start(program: string, stopOnEntry: boolean, debug: boolean): Promise<void> {
+    public async start(program: string, stopOnEntry: boolean, debug: boolean, bssemblerCommand?: string, emulatorCommand?: string): Promise<void> {
+        if ((process.platform !== 'win32' || process.arch !== 'x64') && (!bssemblerCommand || !emulatorCommand)) {
+            this.sendEvent('error-on-start', '"bssemblerCommand" and "emulatorCommand" have to be defined in launch.json for platforms other than windows/x64');
+            return;
+        }
+
         program = this.normalisePathAndCasing(program);
         this.currentProgram = program;
         this.lineMapper = new LineToInstructionMapper();
@@ -130,10 +135,10 @@ export class BssemblerRuntime extends EventEmitter {
         const { fd: _mapFd, path: mapFilePath, cleanup: cleanupMapFile } = await tmpFile();
 
         try {
-            await this.bssemble(program, backseatPath, mapFilePath);
+            await this.bssemble(program, backseatPath, mapFilePath, bssemblerCommand);
             await this.readMapFile(mapFilePath);
             this.validateBreakpoints();
-            const port = await this.startEmulator(backseatPath);
+            const port = await this.startEmulator(backseatPath, emulatorCommand);
             const debugConnection = await DebugConnection.connect(port);
             this.listenToConnectionEvents(debugConnection);
             this.initialiseDebugger(debugConnection, stopOnEntry);
@@ -141,8 +146,8 @@ export class BssemblerRuntime extends EventEmitter {
         } catch (error) {
             this.emulatorProcess?.kill();
             this.emulatorProcess = undefined;
-            // TODO: Show errors to the user
-            console.log(error);
+            this.sendEvent('error-on-start', error);
+            console.error(error);
         } finally {
             cleanupMapFile();
             cleanupBackseat();
@@ -153,13 +158,20 @@ export class BssemblerRuntime extends EventEmitter {
         this.emulatorProcess?.kill();
     }
 
-    private async bssemble(program: string, backseatPath: string, mapFilePath: string): Promise<void> {
+    private async bssemble(program: string, backseatPath: string, mapFilePath: string, bssemblerCommand?: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            const bssemblerPath = this._fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
-            const bssemblerProcess = spawn(bssemblerPath, ['-m', mapFilePath, program]);
+            let bssemblerProcess: ChildProcess;
+
+            if (!bssemblerCommand) {
+                const bssemblerPath = this._fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
+                bssemblerProcess = spawn(bssemblerPath, ['-m', mapFilePath, program]);
+
+            } else {
+                bssemblerProcess = exec(`${bssemblerCommand} -m "${mapFilePath}" "${program}"`, { encoding: 'buffer' });
+            }
 
             const backseatStream = createWriteStream(backseatPath);
-            bssemblerProcess.stdout.pipe(backseatStream);
+            bssemblerProcess.stdout?.pipe(backseatStream);
 
             let killed = false;
 
@@ -226,11 +238,15 @@ export class BssemblerRuntime extends EventEmitter {
         }
     }
 
-    private async startEmulator(backseatPath: string): Promise<number> {
+    private async startEmulator(backseatPath: string, emulatorCommand?: string): Promise<number> {
         return new Promise((resolve, reject) => {
-            const emulatorPath = this._fileAccessor.extensionPath(LOCAL_EMULATOR_PATH);
-            const fontPath = this._fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
-            this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
+            if (!emulatorCommand) {
+                const emulatorPath = this._fileAccessor.extensionPath(LOCAL_EMULATOR_PATH);
+                const fontPath = this._fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
+                this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
+            } else {
+                this.emulatorProcess = exec(`${emulatorCommand} "${backseatPath}"`);
+            }
 
             let killed = false;
 
@@ -321,9 +337,9 @@ export class BssemblerRuntime extends EventEmitter {
         }
     }
 
-    private streamLines(stream: Readable, lineCallback: (line: string) => void) {
+    private streamLines(stream: Readable | null, lineCallback: (line: string) => void) {
         let buffer = '';
-        stream.on('data', (chunk: Buffer) => {
+        stream?.on('data', (chunk: Buffer) => {
             const newData = chunk.toString('utf8');
             const lines = newData.split(/[\r\n]+/);
 
@@ -341,7 +357,7 @@ export class BssemblerRuntime extends EventEmitter {
             buffer = lines[lines.length - 1];
         });
 
-        stream.on('end', () => {
+        stream?.on('end', () => {
             if (buffer.length > 0) {
                 setTimeout(() => lineCallback(buffer), 0);
             }

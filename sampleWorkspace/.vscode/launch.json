@@ -8,7 +8,7 @@
 			"type": "bssembler",
 			"request": "launch",
 			"name": "Debug Current File",
-			"program": "${file}",
+			"program": "${workspaceFolder}/test.bsm",
 			"trace": false
 		}
 	]
