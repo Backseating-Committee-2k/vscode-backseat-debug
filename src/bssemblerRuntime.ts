@@ -40,7 +40,7 @@ class LineToInstructionMapper {
         this.lineToInstruction.set(line, instruction);
         this.instructionToLine.set(instruction, line);
         this.lines.push(line);
-        this.lines.sort();
+        this.lines.sort((a, b) => a - b);
     }
 
     public convertLineToInstruction(line: number): number | undefined {
@@ -65,7 +65,7 @@ class LineToInstructionMapper {
 
 export class BssemblerRuntime extends EventEmitter {
     private readonly breakpoints = new Map<string, RuntimeBreakpoints>();
-    private nextBreakpointId = 0;
+    private nextBreakpointId = 1;
 
     private lineMapper = new LineToInstructionMapper();
 
