@@ -68,6 +68,7 @@ export class BssemblerRuntime extends EventEmitter {
     private nextBreakpointId = 1;
 
     private lineMapper = new LineToInstructionMapper();
+    private linesLoaded = false;
 
     private currentProgram?: string;
     private currentLine: number = 0;
@@ -80,30 +81,33 @@ export class BssemblerRuntime extends EventEmitter {
 
     public async setBreakpoints(path: string, breakpointLines: number[]): Promise<RuntimeBreakpoint[]> {
         path = this.normalisePathAndCasing(path);
-        let oldBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
+        let removedBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
+        const newBreakpoints = new RuntimeBreakpoints();
 
-        let newBreakpoints = new RuntimeBreakpoints();
         for (const line of breakpointLines) {
-            if (newBreakpoints.items.has(line)) {
-                continue; // Ignore duplicate lines.
-            }
-
-            let breakpoint = oldBreakpoints.items.get(line);
-            if (!breakpoint) {
-                breakpoint = new RuntimeBreakpoint(this.nextBreakpointId, line);
-                ++this.nextBreakpointId;
-            } else {
-                oldBreakpoints.items.delete(line);
-            }
-
-            newBreakpoints.items.set(line, breakpoint);
+            newBreakpoints.items.set(line, new RuntimeBreakpoint(this.nextBreakpointId, line));
+            ++this.nextBreakpointId;
         }
 
-        this.sendBreakpointUpdates(this.debugConnection, newBreakpoints.items.values(), oldBreakpoints.items.values());
-
         this.breakpoints.set(path, newBreakpoints);
+        if (this.linesLoaded) {
+            this.validateBreakpoints();
+        }
 
-        return [...newBreakpoints.items.values()];
+        const validatedNewBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
+        const addedBreakpoints = new RuntimeBreakpoints();
+
+        for (const breakpoint of validatedNewBreakpoints.items.values()) {
+            if (removedBreakpoints.items.has(breakpoint.line)) {
+                removedBreakpoints.items.delete(breakpoint.line);
+            } else {
+                addedBreakpoints.items.set(breakpoint.line, breakpoint);
+            }
+        }
+
+        this.sendBreakpointUpdates(this.debugConnection, addedBreakpoints.items.values(), removedBreakpoints.items.values());
+
+        return [...validatedNewBreakpoints.items.values()];
     }
 
     public continue() {
@@ -217,6 +221,8 @@ export class BssemblerRuntime extends EventEmitter {
 
             this.lineMapper.set(line, instruction);
         }
+
+        this.linesLoaded = true;
     }
 
     private validateBreakpoints() {
