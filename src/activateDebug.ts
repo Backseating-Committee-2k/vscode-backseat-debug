@@ -9,7 +9,9 @@ import { FileAccessor } from './bssemblerRuntime';
 export function activateDebug(context: vscode.ExtensionContext) {
     registerCommands(context);
 
-    const factory: any = new InlineDebugAdapterFactory(context);
+    const channel = vscode.window.createOutputChannel('Backseat Debug');
+
+    const factory: any = new InlineDebugAdapterFactory(context, channel);
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('bssembler', factory));
     if ('dispose' in factory) {
         context.subscriptions.push(factory);
@@ -145,9 +147,9 @@ function registerCommands(context: vscode.ExtensionContext) {
 }
 
 class InlineDebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory {
-    constructor(private context: vscode.ExtensionContext) { }
+    constructor(private context: vscode.ExtensionContext, private channel: vscode.OutputChannel) { }
 
     createDebugAdapterDescriptor(_session: vscode.DebugSession): ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new BssemblerDebugSession(new WorkspaceFileAccessor(this.context)));
+        return new vscode.DebugAdapterInlineImplementation(new BssemblerDebugSession(new WorkspaceFileAccessor(this.context), this.channel));
     }
 }

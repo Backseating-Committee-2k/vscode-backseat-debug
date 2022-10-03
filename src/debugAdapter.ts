@@ -57,14 +57,14 @@ if (port > 0) {
         socket.on('end', () => {
             console.error('>> client connection closed\n');
         });
-        const session = new BssemblerDebugSession(fsAccessor);
+        const session = new BssemblerDebugSession(fsAccessor, undefined);
         session.setRunAsServer(true);
         session.start(socket, socket);
     }).listen(port);
 } else {
 
     // start a single session that communicates via stdin/stdout
-    const session = new BssemblerDebugSession(fsAccessor);
+    const session = new BssemblerDebugSession(fsAccessor, undefined);
     process.on('SIGTERM', () => {
         session.shutdown();
     });
