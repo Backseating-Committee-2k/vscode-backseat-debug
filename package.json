@@ -1,7 +1,7 @@
 {
     "name": "backseat-debug",
     "displayName": "Backseat Debug",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "thejp",
     "description": "Debug Extension for debugging backseat (.bs) and bssembler (.bsm) applications.",
     "author": {
