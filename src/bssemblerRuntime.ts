@@ -3,7 +3,7 @@ import { ChildProcess, exec, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { Breaking, Continue, DebugConnection, HitBreakpoint, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
+import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
 import { Readable } from 'stream';
 
 export interface FileAccessor {
@@ -314,6 +314,14 @@ export class BssemblerRuntime extends EventEmitter {
                 this.sendEvent('stop-on-step', line);
             }
         });
+
+        debugConnection.on('message-pausing', (event: Pausing) => {
+            const line = this.lineMapper.convertInstructionToLine(event.location);
+            if (line) {
+                this.currentLine = line;
+                this.sendEvent('stop-on-pause', line);
+            }
+        });
     }
 
     private initialiseDebugger(debugConnection: DebugConnection, stopOnEntry: boolean) {
@@ -322,7 +330,7 @@ export class BssemblerRuntime extends EventEmitter {
             this.sendBreakpointUpdates(debugConnection, breakpoints.items.values(), undefined);
         }
 
-        debugConnection.send(new StartExecution());
+        debugConnection.send(new StartExecution(stopOnEntry));
     }
 
     private sendBreakpointUpdates(debugConnection?: DebugConnection, setBreakpoints?: IterableIterator<RuntimeBreakpoint>, removeBreakpoints?: IterableIterator<RuntimeBreakpoint>) {

@@ -84,6 +84,9 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this._runtime.on('stop-on-step', _ =>
             this.sendEvent(new StoppedEvent('step', BssemblerDebugSession.threadID)));
 
+        this._runtime.on('stop-on-pause', _ =>
+            this.sendEvent(new StoppedEvent('entry', BssemblerDebugSession.threadID)));
+
         this._runtime.on('emulator-stopped', _ =>
             this.sendEvent(new TerminatedEvent(false)));
 

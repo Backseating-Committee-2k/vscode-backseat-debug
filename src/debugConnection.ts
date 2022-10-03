@@ -6,10 +6,13 @@ export interface Breakpoints {
 }
 
 export type Request = StartExecution | Continue | StepOne |
-    SetBreakpoints | RemoveBreakpoints | ListBreakpoints;
+    SetBreakpoints | RemoveBreakpoints;
 export type Address = number;
 
-export class StartExecution { }
+export class StartExecution {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    constructor(public readonly stop_on_entry: boolean) { }
+}
 
 export class SetBreakpoints {
     // @ts-ignore Suppressing invalid "declared but never used". All fields are used by JSON.stringify.
@@ -24,15 +27,17 @@ export class RemoveBreakpoints {
 export class Continue { }
 export class StepOne { }
 
-export type Response = ListBreakpoints | HitBreakpoint | Breaking;
-
-export class ListBreakpoints { }
+export type Response = HitBreakpoint | Breaking | Pausing;
 
 export class HitBreakpoint {
     constructor(public readonly location: Address) { }
 }
 
 export class Breaking {
+    constructor(public readonly location: Address) { }
+}
+
+export class Pausing {
     constructor(public readonly location: Address) { }
 }
 
@@ -102,7 +107,8 @@ export class DebugConnection extends EventEmitter {
         const events = [
             'HitBreakpoint',
             'Breakpoints',
-            'Breaking'
+            'Breaking',
+            'Pausing',
         ];
         for (const event of events) {
             if (json.hasOwnProperty(event)) {
