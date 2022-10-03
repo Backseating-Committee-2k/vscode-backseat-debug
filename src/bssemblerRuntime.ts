@@ -146,6 +146,7 @@ export class BssemblerRuntime extends EventEmitter {
         } catch (error) {
             this.emulatorProcess?.kill();
             this.emulatorProcess = undefined;
+            this.sendEvent('log', `[error] ${error}`);
             this.sendEvent('error-on-start', error);
             console.error(error);
         } finally {
@@ -172,6 +173,7 @@ export class BssemblerRuntime extends EventEmitter {
 
             const backseatStream = createWriteStream(backseatPath);
             bssemblerProcess.stdout?.pipe(backseatStream);
+            this.streamLines(bssemblerProcess.stderr, line => this.sendEvent('log', `[bssembler] ${line}`));
 
             let killed = false;
 
@@ -261,7 +263,10 @@ export class BssemblerRuntime extends EventEmitter {
                 this.sendEvent('emulator-stopped', code);
             });
 
+            this.streamLines(this.emulatorProcess.stderr, line => this.sendEvent('log', `[emulator] ${line}`));
+
             this.streamLines(this.emulatorProcess.stdout, line => {
+                this.sendEvent('log', `[emulator] ${line}`);
                 if (killed || !line.startsWith(DEBUGGER_PORT_PREFIX)) {
                     return;
                 }

@@ -50,6 +50,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
     private _variableHandles = new Handles<'registers'>();
 
+    private _channel: vscode.OutputChannel;
+
     /**
      * Creates a new debug adapter that is used for one debug session.
      * We configure the default implementation of a debug adapter here.
@@ -60,6 +62,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         // this debugger uses zero-based lines and columns
         this.setDebuggerLinesStartAt1(true);
         this.setDebuggerColumnsStartAt1(false);
+
+        this._channel = vscode.window.createOutputChannel('Backseat Debug');
 
         this._runtime = new BssemblerRuntime(fileAccessor);
 
@@ -86,6 +90,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
             this.sendEvent(new TerminatedEvent(false));
             vscode.window.showErrorMessage(`Could not Launch Debugger: ${error}`);
         });
+
+        this._runtime.on('log', line => this._channel.appendLine(line));
     }
 
     /**

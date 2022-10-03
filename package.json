@@ -170,7 +170,7 @@
                         "type": "bssembler",
                         "request": "launch",
                         "name": "Current File",
-                        "program": "^\"\\${file}\"",
+                        "program": "${file}",
                         "stopOnEntry": false
                     }
                 ],
