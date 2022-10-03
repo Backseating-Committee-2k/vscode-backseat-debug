@@ -31,6 +31,8 @@ interface ILaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
     trace?: boolean;
     /** run without debugging */
     noDebug?: boolean;
+    /** run without emulator graphics */
+    noGraphics?: boolean
     /** Command with arguments for external bssembler. */
     bssemblerCommand?: string;
     /** Command with arguments for external. */
@@ -135,7 +137,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         await this._configurationDone.wait(1000);
 
         // start the program in the runtime
-        await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug, args.bssemblerCommand, args.emulatorCommand);
+        await this._runtime.start(args.program, !!args.stopOnEntry, !args.noDebug, !!args.noGraphics, args.bssemblerCommand, args.emulatorCommand);
     }
 
     protected terminateRequest(response: DebugProtocol.TerminateResponse, args: DebugProtocol.TerminateArguments, request?: DebugProtocol.Request) {

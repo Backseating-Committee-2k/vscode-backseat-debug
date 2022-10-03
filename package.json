@@ -141,6 +141,11 @@
                                 "description": "Automatically stop after launch.",
                                 "default": false
                             },
+                            "noGraphics": {
+                                "type": "boolean",
+                                "description": "Debug emulator without graphics.",
+                                "default": false
+                            },
                             "trace": {
                                 "type": "boolean",
                                 "description": "Enable logging of the Debug Adapter Protocol.",
@@ -208,6 +213,18 @@
                             "stopOnEntry": false,
                             "bssemblerCommand": "path/to/Upholsterer2k",
                             "emulatorCommand": "cargo run --manifest-path path/to/BackseatSafeSystem2k/Cargo.toml --release --features debugger -- debug --font-path path/to/BackseatSafeSystem2k/resources/CozetteVector.ttf"
+                        }
+                    },
+                    {
+                        "label": "Bssembler: Launch File without Graphics",
+                        "description": "A new configuration for debugging bssembler files without emulator graphics.",
+                        "body": {
+                            "type": "bssembler",
+                            "request": "launch",
+                            "name": "Current File",
+                            "program": "^\"\\${file}\"",
+                            "stopOnEntry": true,
+                            "noGraphics": true
                         }
                     }
                 ]

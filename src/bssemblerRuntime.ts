@@ -14,6 +14,7 @@ export interface FileAccessor {
 
 const LOCAL_BSSEMBLER_PATH = './bin/Upholsterer2k.exe';
 const LOCAL_EMULATOR_PATH = './bin/backseat_safe_system_2k.exe';
+const LOCAL_EMULATOR_NO_GRAPHICS_PATH = './bin/backseat_safe_system_2k_no_graphics.exe';
 const LOCAL_FONT_FILE_PATH = './bin/CozetteVector.ttf';
 const BSSEMBLE_TIMEOUT_MS = 2500;
 const EMULATOR_TIMEOUT_MS = 2500;
@@ -125,7 +126,7 @@ export class BssemblerRuntime extends EventEmitter {
     /**
      * Start executing the given program.
      */
-    public async start(program: string, stopOnEntry: boolean, debug: boolean, bssemblerCommand?: string, emulatorCommand?: string): Promise<void> {
+    public async start(program: string, stopOnEntry: boolean, debug: boolean, noGraphics: boolean, bssemblerCommand?: string, emulatorCommand?: string): Promise<void> {
         if ((process.platform !== 'win32' || process.arch !== 'x64') && (!bssemblerCommand || !emulatorCommand)) {
             this.sendEvent('error-on-start', '"bssemblerCommand" and "emulatorCommand" have to be defined in launch.json for platforms other than windows/x64');
             return;
@@ -142,7 +143,7 @@ export class BssemblerRuntime extends EventEmitter {
             await this.bssemble(program, backseatPath, mapFilePath, bssemblerCommand);
             await this.readMapFile(mapFilePath);
             this.validateBreakpoints();
-            const port = await this.startEmulator(backseatPath, emulatorCommand);
+            const port = await this.startEmulator(backseatPath, noGraphics, emulatorCommand);
             const debugConnection = await DebugConnection.connect(port);
             this.listenToConnectionEvents(debugConnection);
             this.initialiseDebugger(debugConnection, stopOnEntry);
@@ -246,10 +247,10 @@ export class BssemblerRuntime extends EventEmitter {
         }
     }
 
-    private async startEmulator(backseatPath: string, emulatorCommand?: string): Promise<number> {
+    private async startEmulator(backseatPath: string, noGraphics: boolean, emulatorCommand?: string): Promise<number> {
         return new Promise((resolve, reject) => {
             if (!emulatorCommand) {
-                const emulatorPath = this._fileAccessor.extensionPath(LOCAL_EMULATOR_PATH);
+                const emulatorPath = this._fileAccessor.extensionPath(noGraphics ? LOCAL_EMULATOR_NO_GRAPHICS_PATH : LOCAL_EMULATOR_PATH);
                 const fontPath = this._fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
                 this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
             } else {

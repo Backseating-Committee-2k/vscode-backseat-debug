@@ -9,7 +9,9 @@
 			"request": "launch",
 			"name": "Debug Current File",
 			"program": "${workspaceFolder}/test.bsm",
-			"trace": false
+			"trace": false,
+			"stopOnEntry": false,
+			"noGraphics": false
 		}
 	]
 }
