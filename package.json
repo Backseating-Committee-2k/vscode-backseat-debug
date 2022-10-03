@@ -9,7 +9,11 @@
     },
     "license": "MIT",
     "keywords": [
-        "backseat bssembler bs bsm backseatsafesystem"
+        "backseat",
+        "bssembler",
+        "bs",
+        "bsm",
+        "backseatsafesystem"
     ],
     "engines": {
         "vscode": "^1.66.0"
