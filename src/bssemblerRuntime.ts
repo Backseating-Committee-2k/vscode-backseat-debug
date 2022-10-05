@@ -3,7 +3,7 @@ import { ChildProcess, exec, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
+import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
 import { Readable } from 'stream';
 
 export interface FileAccessor {
@@ -73,6 +73,8 @@ export class BssemblerRuntime extends EventEmitter {
 
     private currentProgram?: string;
     private currentLine: number = 0;
+    private registers: number[] = [];
+
     private debugConnection?: DebugConnection;
     private emulatorProcess?: ChildProcess;
 
@@ -162,6 +164,10 @@ export class BssemblerRuntime extends EventEmitter {
 
     public terminate() {
         this.emulatorProcess?.kill();
+    }
+
+    public getRegisters(): number[] {
+        return [...this.registers];
     }
 
     private async bssemble(program: string, backseatPath: string, mapFilePath: string, bssemblerCommand?: string): Promise<void> {
@@ -322,6 +328,10 @@ export class BssemblerRuntime extends EventEmitter {
                 this.currentLine = line;
                 this.sendEvent('stop-on-pause', line);
             }
+        });
+
+        debugConnection.on('message-registers', (event: Registers) => {
+            this.registers = event.registers;
         });
     }
 

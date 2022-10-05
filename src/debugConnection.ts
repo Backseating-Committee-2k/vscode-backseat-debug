@@ -27,7 +27,7 @@ export class RemoveBreakpoints {
 export class Continue { }
 export class StepOne { }
 
-export type Response = HitBreakpoint | Breaking | Pausing;
+export type Response = HitBreakpoint | Breaking | Pausing | Registers;
 
 export class HitBreakpoint {
     constructor(public readonly location: Address) { }
@@ -39,6 +39,10 @@ export class Breaking {
 
 export class Pausing {
     constructor(public readonly location: Address) { }
+}
+
+export class Registers {
+    constructor(public readonly registers: number[]) { }
 }
 
 export class DebugConnection extends EventEmitter {
@@ -109,6 +113,7 @@ export class DebugConnection extends EventEmitter {
             'Breakpoints',
             'Breaking',
             'Pausing',
+            'Registers',
         ];
         for (const event of events) {
             if (json.hasOwnProperty(event)) {

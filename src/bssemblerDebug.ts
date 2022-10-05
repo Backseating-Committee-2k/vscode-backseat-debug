@@ -218,6 +218,23 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this.sendResponse(response);
     }
 
+    protected variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request) {
+        const handle = this._variableHandles.get(args.variablesReference);
+        if (handle !== 'registers') {
+            return;
+        }
+
+        response.body = {
+            variables: this._runtime.getRegisters().map((value, index) => ({
+                name: `R${index}`,
+                value: `${value}`,
+                variablesReference: 0,
+                type: 'integer',
+            } as DebugProtocol.Variable))
+        };
+        this.sendResponse(response);
+    }
+
     private createSource(filePath: string): Source {
         return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
     }
