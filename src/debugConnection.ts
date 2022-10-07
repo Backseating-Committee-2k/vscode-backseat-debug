@@ -6,7 +6,7 @@ export interface Breakpoints {
 }
 
 export type Request = StartExecution | Continue | StepOne |
-    SetBreakpoints | RemoveBreakpoints;
+    SetBreakpoints | RemoveBreakpoints | SetRegister;
 export type Address = number;
 
 export class StartExecution {
@@ -22,6 +22,10 @@ export class SetBreakpoints {
 export class RemoveBreakpoints {
     // @ts-ignore Suppressing invalid "declared but never used". All fields are used by JSON.stringify.
     constructor(private readonly locations: Address[]) { }
+}
+
+export class SetRegister {
+    constructor(public readonly register: number, public readonly value: number) { }
 }
 
 export class Continue { }

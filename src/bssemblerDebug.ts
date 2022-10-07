@@ -108,9 +108,11 @@ export class BssemblerDebugSession extends LoggingDebugSession {
      */
     protected initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
         // build and return the capabilities of this debug adapter:
-        response.body = response.body || {};
-
-        response.body.supportTerminateDebuggee = true;
+        response.body = {
+            supportsConfigurationDoneRequest: true,
+            supportTerminateDebuggee: true,
+            supportsSetVariable: true,
+        };
 
         this.sendResponse(response);
 
@@ -238,6 +240,29 @@ export class BssemblerDebugSession extends LoggingDebugSession {
                 variablesReference: 0,
                 type: 'integer',
             } as DebugProtocol.Variable))
+        };
+        this.sendResponse(response);
+    }
+
+    protected setVariableRequest(response: DebugProtocol.SetVariableResponse, args: DebugProtocol.SetVariableArguments) {
+        const handle = this._variableHandles.get(args.variablesReference);
+        if (handle !== 'registers') {
+            return;
+        }
+
+        const registerNumber = /^R(0|[1-9][0-9]*)$/i;
+        const match = args.name.match(registerNumber);
+        if (!match) {
+            return;
+        }
+
+        const index = parseInt(match[1]);
+        const value = parseInt(args.value);
+        this._runtime.setRegister(index, value);
+
+        response.body =  {
+            value: args.value,
+            type: 'integer',
         };
         this.sendResponse(response);
     }

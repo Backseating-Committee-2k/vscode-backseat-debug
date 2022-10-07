@@ -3,7 +3,7 @@ import { ChildProcess, exec, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, StartExecution, StepOne } from './debugConnection';
+import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne } from './debugConnection';
 import { Readable } from 'stream';
 
 export interface FileAccessor {
@@ -168,6 +168,10 @@ export class BssemblerRuntime extends EventEmitter {
 
     public getRegisters(): number[] {
         return [...this.registers];
+    }
+
+    public setRegister(index: number, value: number) {
+        this.debugConnection?.send(new SetRegister(index, value));
     }
 
     private async bssemble(program: string, backseatPath: string, mapFilePath: string, bssemblerCommand?: string): Promise<void> {
