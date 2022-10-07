@@ -66,7 +66,6 @@ class LineToInstructionMapper {
 
 export class BssemblerRuntime extends EventEmitter {
     private readonly breakpoints = new Map<string, RuntimeBreakpoints>();
-    private nextBreakpointId = 1;
 
     private lineMapper = new LineToInstructionMapper();
     private linesLoaded = false;
@@ -82,17 +81,20 @@ export class BssemblerRuntime extends EventEmitter {
         super();
     }
 
-    public async setBreakpoints(path: string, breakpointLines: number[]): Promise<RuntimeBreakpoint[]> {
+    public setBreakpoints(path: string, breakpoints: RuntimeBreakpoint[]) {
         path = this.normalisePathAndCasing(path);
-        let removedBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
+        const removedBreakpoints = this.breakpoints.get(path) || new RuntimeBreakpoints();
         const newBreakpoints = new RuntimeBreakpoints();
 
-        for (const line of breakpointLines) {
-            newBreakpoints.items.set(line, new RuntimeBreakpoint(this.nextBreakpointId, line));
-            ++this.nextBreakpointId;
+        for (const breakpoint of breakpoints) {
+            if (newBreakpoints.items.has(breakpoint.line)) {
+                this.sendEvent('breakpoint-removed', breakpoint);
+            } else {
+                newBreakpoints.items.set(breakpoint.line, breakpoint);
+            }
         }
-
         this.breakpoints.set(path, newBreakpoints);
+
         if (this.linesLoaded) {
             this.validateBreakpoints();
         }
@@ -109,8 +111,6 @@ export class BssemblerRuntime extends EventEmitter {
         }
 
         this.sendBreakpointUpdates(this.debugConnection, addedBreakpoints.items.values(), removedBreakpoints.items.values());
-
-        return [...validatedNewBreakpoints.items.values()];
     }
 
     public continue() {
@@ -240,11 +240,10 @@ export class BssemblerRuntime extends EventEmitter {
 
         for (const breakpoint of [...breakpoints.items.values()]) {
             const correctLine = this.lineMapper.getNextValidLine(breakpoint.line);
-            if (!correctLine) {
+            if (!correctLine || (correctLine !== breakpoint.line && breakpoints.items.has(correctLine))) {
                 this.sendEvent('breakpoint-removed', breakpoint);
                 breakpoints.items.delete(breakpoint.line);
-            }
-            if (correctLine && correctLine !== breakpoint.line) {
+            } else if (correctLine !== breakpoint.line) {
                 breakpoints.items.delete(breakpoint.line);
                 const newBreakpoint = new RuntimeBreakpoint(breakpoint.id, correctLine);
                 breakpoints.items.set(correctLine, newBreakpoint);

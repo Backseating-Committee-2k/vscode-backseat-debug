@@ -54,6 +54,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
     private _channel?: vscode.OutputChannel;
 
+    private nextBreakpointId = 1;
+
     /**
      * Creates a new debug adapter that is used for one debug session.
      * We configure the default implementation of a debug adapter here.
@@ -174,12 +176,17 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         const path = args.source.path as string;
         const clientLines = args.lines || [];
 
-        const debuggerLines = clientLines.map(line => this.convertClientLineToDebugger(line));
-        const debuggerBreakpoints = await this._runtime.setBreakpoints(path, debuggerLines);
-        const breakpoints = debuggerBreakpoints.map((debuggerBreakpoint) => {
+        const debuggerBreakpoints = clientLines.map(line => {
+            ++this.nextBreakpointId;
+            line = this.convertClientLineToDebugger(line);
+            return new RuntimeBreakpoint(this.nextBreakpointId - 1, line);
+        });
+
+        await this._runtime.setBreakpoints(path, [...debuggerBreakpoints]);
+        const breakpoints = debuggerBreakpoints.map(debuggerBreakpoint => {
             const line = this.convertDebuggerLineToClient(debuggerBreakpoint.line);
-            const breakpoint = new Breakpoint(true, line);
-            breakpoint.setId(debuggerBreakpoint.id);
+            const breakpoint = new Breakpoint(true, line) as DebugProtocol.Breakpoint;
+            breakpoint.id = debuggerBreakpoint.id;
             return breakpoint;
         });
 
@@ -236,6 +243,6 @@ export class BssemblerDebugSession extends LoggingDebugSession {
     }
 
     private createSource(filePath: string): Source {
-        return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
+        return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'bssembler-adapter-data');
     }
 }
