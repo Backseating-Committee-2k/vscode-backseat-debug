@@ -1,0 +1,32 @@
+jump main
+
+text:
+    .string "Hello, World! "
+text_end:
+
+main:
+    copy *CURSOR_POINTER, R0  // Get the current cursor pointer value.
+    copy text, R1             // Create a pointer to the start of the text.
+    copy text_end, R2         // Create a pointer to the (exclusive) end of the text.
+
+    add R1, 4, R1  // Skip first four bytes of string, since these contain the length.
+
+copy_text:
+    // Copy one character from the text to the terminal.
+    copy *R1, R5
+    copy_byte R5, *R0
+    add R0, 1, R0
+    add R1, 4, R1
+
+    // Loop while R1 < R2.
+    comp R1, R2, R5
+    jump_lt R5, copy_text
+
+    copy TERMINAL_END, R2
+    comp R0, R2, R5
+    jump_lt R5, copy_end
+    copy TERMINAL_START, R0
+
+copy_end:
+    copy R0, *CURSOR_POINTER  // Update cursor position.
+    jump main
