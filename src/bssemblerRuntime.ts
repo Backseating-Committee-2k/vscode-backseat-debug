@@ -37,7 +37,7 @@ class RuntimeBreakpoints {
 }
 
 export class RuntimeLocation {
-    constructor(public readonly path: string, public readonly line: number) { }
+    constructor(public readonly path: string, public readonly line?: number) { }
 }
 
 class LineToInstructionMapper {
@@ -79,7 +79,7 @@ export class BssemblerRuntime extends EventEmitter {
     private linesLoaded = false;
 
     private currentProgram?: string;
-    private currentLine: number = 0;
+    private currentLine?: number;
     private registers: number[] = [];
 
     private debugConnection?: DebugConnection;
@@ -327,40 +327,29 @@ export class BssemblerRuntime extends EventEmitter {
 
     private listenToConnectionEvents(debugConnection: DebugConnection) {
         debugConnection.on('message-hitbreakpoint', (event: HitBreakpoint) => {
-            const line = this.lineMapper.convertInstructionToLine(event.location);
-            const breakpoints = this.breakpoints.get(this.currentProgram ?? '');
-
-            if (!line || !this.currentProgram || !breakpoints) {
-                return;
-            }
-
-            this.currentLine = line;
-            const breakpoint = breakpoints.items.get(line);
-
-            if (breakpoint) {
-                this.sendEvent('stop-on-breakpoint', breakpoint);
-            }
+            this.breakAtLocation(event.location, 'stop-on-breakpoint');
         });
 
         debugConnection.on('message-breaking', (event: Breaking) => {
-            const line = this.lineMapper.convertInstructionToLine(event.location);
-            if (line) {
-                this.currentLine = line;
-                this.sendEvent('stop-on-step', line);
-            }
+            this.breakAtLocation(event.location, 'stop-on-step');
         });
 
         debugConnection.on('message-pausing', (event: Pausing) => {
-            const line = this.lineMapper.convertInstructionToLine(event.location);
-            if (line) {
-                this.currentLine = line;
-                this.sendEvent('stop-on-pause', line);
-            }
+            this.breakAtLocation(event.location, 'stop-on-pause');
         });
 
         debugConnection.on('message-registers', (event: Registers) => {
             this.registers = event.registers;
         });
+    }
+
+    private breakAtLocation(location: number, event: string) {
+        const line = this.lineMapper.convertInstructionToLine(location);
+        if (!line) {
+            this.sendEvent('log', `[debugger] breaking at unknown location: ${location}`);
+        }
+        this.currentLine = line;
+        this.sendEvent(event);
     }
 
     private initialiseDebugger(debugConnection: DebugConnection, stopOnEntry: boolean) {

@@ -91,13 +91,13 @@ export class BssemblerDebugSession extends LoggingDebugSession {
             this.sendEvent(new BreakpointEvent('removed', { id: breakpoint.id } as DebugProtocol.Breakpoint));
         });
 
-        this._runtime.on('stop-on-breakpoint', _ =>
+        this._runtime.on('stop-on-breakpoint', () =>
             this.sendEvent(new StoppedEvent('breakpoint', BssemblerDebugSession.threadID)));
 
-        this._runtime.on('stop-on-step', _ =>
+        this._runtime.on('stop-on-step', () =>
             this.sendEvent(new StoppedEvent('step', BssemblerDebugSession.threadID)));
 
-        this._runtime.on('stop-on-pause', _ =>
+        this._runtime.on('stop-on-pause', () =>
             this.sendEvent(new StoppedEvent('entry', BssemblerDebugSession.threadID)));
 
         this._runtime.on('emulator-stopped', _ =>
