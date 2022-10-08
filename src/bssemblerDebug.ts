@@ -12,7 +12,7 @@ import {
     StackFrame, Source, TerminatedEvent, BreakpointEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { BssemblerRuntime, FileAccessor, RuntimeBreakpoint } from './bssemblerRuntime';
+import { BssemblerRuntime, Configuration, FileAccessor, RuntimeBreakpoint } from './bssemblerRuntime';
 import { Subject } from 'await-notify';
 import { basename } from 'path';
 
@@ -70,7 +70,16 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         this._channel = channel;
         this._channel?.clear();
 
-        this._runtime = new BssemblerRuntime(fileAccessor);
+        const configuration = vscode.workspace.getConfiguration('backseat-debug');
+        const runtimeConfiguration = {
+            bssemblerPath: configuration['bssemblerExternalPath'],
+            emulatorPath: configuration['emulatorExternalPath'],
+            emulatorPathNoGraphics: configuration['emulatorExternalPathNoGraphics'],
+            bssemblerCommand: configuration['bssemblerDefaultCommand'],
+            emulatorCommand: configuration['emulatorDefaultCommand'],
+        } as Configuration;
+
+        this._runtime = new BssemblerRuntime(runtimeConfiguration, fileAccessor);
 
         this._runtime.on('breakpoint-changed', (breakpoint: RuntimeBreakpoint) => {
             this.sendEvent(new BreakpointEvent('changed', {

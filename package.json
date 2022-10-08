@@ -116,6 +116,36 @@
                 "language": "bssembler"
             }
         ],
+        "configuration": {
+            "title": "Backseat Debug",
+            "properties": {
+                "backseat-debug.bssemblerExternalPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Specifies an external bssembler to be used. The bssembler has to support the '-m' CLI option."
+                },
+                "backseat-debug.emulatorExternalPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Specifies an external emulator to be used. The emulator has to support the debug interface over TCP."
+                },
+                "backseat-debug.emulatorExternalPathNoGraphics": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Specifies an external emulator without graphics to be used. The emulator has to support the debug interface over TCP."
+                },
+                "backseat-debug.bssemblerDefaultCommand": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Command with arguments for external bssembler that should be used if no bssemblerCommand is specified. This setting overrules bssemblerExternalPath."
+                },
+                "backseat-debug.emulatorDefaultCommand": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Command with arguments for external emulator that should be used if no emulatorCommand is specified. This setting overrules emulatorExternalPath."
+                }
+            }
+        },
         "debuggers": [
             {
                 "type": "bssembler",

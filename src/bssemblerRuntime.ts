@@ -12,6 +12,14 @@ export interface FileAccessor {
     extensionPath(path: string): string;
 }
 
+export interface Configuration {
+    bssemblerPath: string,
+    emulatorPath: string,
+    emulatorPathNoGraphics: string,
+    bssemblerCommand: string,
+    emulatorCommand: string,
+}
+
 const LOCAL_BSSEMBLER_PATH = './bin/Upholsterer2k.exe';
 const LOCAL_EMULATOR_PATH = './bin/backseat_safe_system_2k.exe';
 const LOCAL_EMULATOR_NO_GRAPHICS_PATH = './bin/backseat_safe_system_2k_no_graphics.exe';
@@ -77,7 +85,7 @@ export class BssemblerRuntime extends EventEmitter {
     private debugConnection?: DebugConnection;
     private emulatorProcess?: ChildProcess;
 
-    constructor(private _fileAccessor: FileAccessor) {
+    constructor(private configuration: Configuration, private fileAccessor: FileAccessor) {
         super();
     }
 
@@ -129,7 +137,12 @@ export class BssemblerRuntime extends EventEmitter {
      * Start executing the given program.
      */
     public async start(program: string, stopOnEntry: boolean, debug: boolean, noGraphics: boolean, bssemblerCommand?: string, emulatorCommand?: string): Promise<void> {
-        if ((process.platform !== 'win32' || process.arch !== 'x64') && (!bssemblerCommand || !emulatorCommand)) {
+        bssemblerCommand = bssemblerCommand || this.configuration.bssemblerCommand;
+        emulatorCommand = emulatorCommand || this.configuration.emulatorCommand;
+        const hasExternalBssembler = !!bssemblerCommand || !!this.configuration.bssemblerPath;
+        const hasExternalEmulator = !!emulatorCommand || !!this.configuration.emulatorPath;
+
+        if ((process.platform !== 'win32' || process.arch !== 'x64') && (!hasExternalBssembler || !hasExternalEmulator)) {
             this.sendEvent('error-on-start', '"bssemblerCommand" and "emulatorCommand" have to be defined in launch.json for platforms other than windows/x64');
             return;
         }
@@ -179,7 +192,8 @@ export class BssemblerRuntime extends EventEmitter {
             let bssemblerProcess: ChildProcess;
 
             if (!bssemblerCommand) {
-                const bssemblerPath = this._fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
+                const bssemblerPath = this.configuration.bssemblerPath ||
+                    this.fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
                 bssemblerProcess = spawn(bssemblerPath, ['-m', mapFilePath, program]);
 
             } else {
@@ -256,11 +270,22 @@ export class BssemblerRuntime extends EventEmitter {
         }
     }
 
+    private getEmulatorPath(noGraphics: boolean): string {
+        let configuredPath = noGraphics ? this.configuration.emulatorPathNoGraphics : this.configuration.emulatorPath;
+        if (noGraphics && this.configuration.emulatorPath && !this.configuration.emulatorPathNoGraphics) {
+            configuredPath = this.configuration.emulatorPath;
+            this.sendEvent('log', '[warning] Configuration contains external emulator path, but no path to external emulator without graphics. Using external emulator with graphics.');
+        }
+
+        return configuredPath ||
+            this.fileAccessor.extensionPath(noGraphics ? LOCAL_EMULATOR_NO_GRAPHICS_PATH : LOCAL_EMULATOR_PATH);
+    }
+
     private async startEmulator(backseatPath: string, noGraphics: boolean, emulatorCommand?: string): Promise<number> {
         return new Promise((resolve, reject) => {
             if (!emulatorCommand) {
-                const emulatorPath = this._fileAccessor.extensionPath(noGraphics ? LOCAL_EMULATOR_NO_GRAPHICS_PATH : LOCAL_EMULATOR_PATH);
-                const fontPath = this._fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
+                const emulatorPath = this.getEmulatorPath(noGraphics);
+                const fontPath = this.fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
                 this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
             } else {
                 this.emulatorProcess = exec(`${emulatorCommand} "${backseatPath}"`);
