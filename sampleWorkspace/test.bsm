@@ -2,14 +2,18 @@ jump main
 
 text:
     .string "Hello, World!"
-text_end:
 
 main:
+    // Create a pointer to the (exclusive) end of the text.
+    copy *text, R2
+    copy 4, R4
+    mult R2, R4, R5, R2
+    add R2, text, R2
+    add R2, 4, R2
+
     copy *CURSOR_POINTER, R0  // Get the current cursor pointer value.
     copy text, R1             // Create a pointer to the start of the text.
-    copy text_end, R2         // Create a pointer to the (exclusive) end of the text.
-
-    add R1, 4, R1  // Skip first four bytes of string, since these contain the length.
+    add R1, 4, R1             // Skip first four bytes of string, since these contain the length.
 
 copy_text:
     // Copy one character from the text to the terminal.
