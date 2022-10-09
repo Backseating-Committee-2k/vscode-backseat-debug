@@ -78,6 +78,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
             bssemblerCommand: configuration['bssemblerDefaultCommand'],
             emulatorCommand: configuration['emulatorDefaultCommand'],
         } as Configuration;
+        this._channel?.appendLine(`[configuration] ${JSON.stringify(runtimeConfiguration)}`);
 
         this._runtime = new BssemblerRuntime(runtimeConfiguration, fileAccessor);
 
