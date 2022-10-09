@@ -6,7 +6,7 @@ export interface Breakpoints {
 }
 
 export type Request = StartExecution | Continue | StepOne |
-    SetBreakpoints | RemoveBreakpoints | SetRegister;
+    SetBreakpoints | RemoveBreakpoints | SetRegister | Terminate;
 export type Address = number;
 
 export class StartExecution {
@@ -30,6 +30,7 @@ export class SetRegister {
 
 export class Continue { }
 export class StepOne { }
+export class Terminate { }
 
 export type Response = HitBreakpoint | Breaking | Pausing | Registers;
 
