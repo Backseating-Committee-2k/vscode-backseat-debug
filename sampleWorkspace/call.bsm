@@ -1,0 +1,21 @@
+call f2
+call recursive
+halt
+
+f1:
+    copy 42, R0
+    return
+f2:
+    call f1
+    copy R0, R1
+    return
+
+recursive:
+    copy 10, R3
+    comp R2, R3, R5
+    jump_lt R5, recurse
+    return
+recurse:
+    add R2, 1, R2
+    call recursive
+    return
