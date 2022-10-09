@@ -32,7 +32,11 @@ export class Continue { }
 export class StepOne { }
 export class Terminate { }
 
-export type Response = HitBreakpoint | Breaking | Pausing | Registers;
+export type Response = Hello | HitBreakpoint | Breaking | Pausing | Registers;
+
+export class Hello {
+    constructor(public readonly pid: number) { }
+}
 
 export class HitBreakpoint {
     constructor(public readonly location: Address) { }
@@ -114,6 +118,7 @@ export class DebugConnection extends EventEmitter {
     private receivedMessage(message: string) {
         const json = JSON.parse(message);
         const events = [
+            'Hello',
             'HitBreakpoint',
             'Breakpoints',
             'Breaking',

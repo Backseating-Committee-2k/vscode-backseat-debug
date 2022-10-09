@@ -3,7 +3,7 @@ import { ChildProcess, exec, ExecOptions, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { Breaking, Continue, DebugConnection, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne, Terminate } from './debugConnection';
+import { Breaking, Continue, DebugConnection, Hello, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne, Terminate } from './debugConnection';
 import { Readable } from 'stream';
 
 export interface FileAccessor {
@@ -84,6 +84,7 @@ export class BssemblerRuntime extends EventEmitter {
 
     private debugConnection?: DebugConnection;
     private emulatorProcess?: ChildProcess;
+    private emulatorPid?: number;
 
     constructor(private configuration: Configuration, private fileAccessor: FileAccessor) {
         super();
@@ -164,7 +165,7 @@ export class BssemblerRuntime extends EventEmitter {
             this.initialiseDebugger(debugConnection, stopOnEntry);
             this.debugConnection = debugConnection;
         } catch (error) {
-            this.emulatorProcess?.kill();
+            this.terminate();
             this.emulatorProcess = undefined;
             this.sendEvent('log', `[error] ${error}`);
             this.sendEvent('error-on-start', error);
@@ -178,6 +179,7 @@ export class BssemblerRuntime extends EventEmitter {
     public terminate() {
         this.debugConnection?.send(new Terminate());
         setTimeout(() => this.emulatorProcess?.kill(), 100);
+        setTimeout(() => this.emulatorPid ? process.kill(this.emulatorPid) : {}, 100);
     }
 
     public getRegisters(): number[] {
@@ -327,6 +329,10 @@ export class BssemblerRuntime extends EventEmitter {
     }
 
     private listenToConnectionEvents(debugConnection: DebugConnection) {
+        debugConnection.on('message-hello', (event: Hello) => {
+            this.emulatorPid = event.pid;
+        });
+
         debugConnection.on('message-hitbreakpoint', (event: HitBreakpoint) => {
             this.breakAtLocation(event.location, 'stop-on-breakpoint');
         });
