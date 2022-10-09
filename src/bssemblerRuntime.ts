@@ -18,14 +18,14 @@ export interface Configuration {
     emulatorPathNoGraphics: string,
     bssemblerCommand: string,
     emulatorCommand: string,
+    bssemblerTimeout: number,
+    emulatorTimeout: number,
 }
 
 const LOCAL_BSSEMBLER_PATH = './bin/Upholsterer2k.exe';
 const LOCAL_EMULATOR_PATH = './bin/backseat_safe_system_2k.exe';
 const LOCAL_EMULATOR_NO_GRAPHICS_PATH = './bin/backseat_safe_system_2k_no_graphics.exe';
 const LOCAL_FONT_FILE_PATH = './bin/CozetteVector.ttf';
-const BSSEMBLE_TIMEOUT_MS = 2500;
-const EMULATOR_TIMEOUT_MS = 2500;
 const DEBUGGER_PORT_PREFIX = 'Debugger-Port:';
 
 export class RuntimeBreakpoint {
@@ -214,7 +214,7 @@ export class BssemblerRuntime extends EventEmitter {
                 bssemblerProcess.kill();
                 backseatStream.close();
                 reject(new Error('bssembler process timed out'));
-            }, BSSEMBLE_TIMEOUT_MS);
+            }, this.configuration.bssemblerTimeout);
 
             bssemblerProcess.on('close', code => {
                 if (killed) {
@@ -300,7 +300,7 @@ export class BssemblerRuntime extends EventEmitter {
                 killed = true;
                 this.emulatorProcess?.kill();
                 reject(new Error('timed out on waiting for debugger port'));
-            }, EMULATOR_TIMEOUT_MS);
+            }, this.configuration.emulatorTimeout);
 
             this.emulatorProcess.on('close', code => {
                 reject(new Error('emulator stopped unexpectedly')); // reject if still waiting for port

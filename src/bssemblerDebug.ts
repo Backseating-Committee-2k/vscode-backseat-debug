@@ -77,6 +77,8 @@ export class BssemblerDebugSession extends LoggingDebugSession {
             emulatorPathNoGraphics: configuration['emulatorExternalPathNoGraphics'],
             bssemblerCommand: configuration['bssemblerDefaultCommand'],
             emulatorCommand: configuration['emulatorDefaultCommand'],
+            bssemblerTimeout: configuration['bssemblerTimeout'],
+            emulatorTimeout: configuration['emulatorTimeout'],
         } as Configuration;
         this._channel?.appendLine(`[configuration] ${JSON.stringify(runtimeConfiguration)}`);
 

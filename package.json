@@ -143,6 +143,16 @@
                     "type": "string",
                     "default": "",
                     "description": "Command with arguments for external emulator that should be used if no emulatorCommand is specified. This setting overrules emulatorExternalPath."
+                },
+                "backseat-debug.bssemblerTimeout": {
+                    "type": "integer",
+                    "default": 2500,
+                    "description": "Time in milliseconds after which the bssembler is killed if it does not terminate."
+                },
+                "backseat-debug.emulatorTimeout": {
+                    "type": "integer",
+                    "default": 2500,
+                    "description": "Time in milliseconds after which the emulator is killed if debugger cannot be connected."
                 }
             }
         },
