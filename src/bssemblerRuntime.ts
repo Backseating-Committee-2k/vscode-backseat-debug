@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { ChildProcess, exec, spawn } from 'child_process';
+import { ChildProcess, exec, ExecOptions, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
@@ -194,10 +194,10 @@ export class BssemblerRuntime extends EventEmitter {
             if (!bssemblerCommand) {
                 const bssemblerPath = this.configuration.bssemblerPath ||
                     this.fileAccessor.extensionPath(LOCAL_BSSEMBLER_PATH);
-                bssemblerProcess = spawn(bssemblerPath, ['-m', mapFilePath, program]);
+                bssemblerProcess = this.spawn(bssemblerPath, ['-m', mapFilePath, program]);
 
             } else {
-                bssemblerProcess = exec(`${bssemblerCommand} -m "${mapFilePath}" "${program}"`, { encoding: 'buffer' });
+                bssemblerProcess = this.exec(`${bssemblerCommand} -m "${mapFilePath}" "${program}"`, { encoding: 'buffer' });
             }
 
             const backseatStream = createWriteStream(backseatPath);
@@ -286,9 +286,9 @@ export class BssemblerRuntime extends EventEmitter {
             if (!emulatorCommand) {
                 const emulatorPath = this.getEmulatorPath(noGraphics);
                 const fontPath = this.fileAccessor.extensionPath(LOCAL_FONT_FILE_PATH);
-                this.emulatorProcess = spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
+                this.emulatorProcess = this.spawn(emulatorPath, ['debug', '--font-path', fontPath, backseatPath]);
             } else {
-                this.emulatorProcess = exec(`${emulatorCommand} "${backseatPath}"`);
+                this.emulatorProcess = this.exec(`${emulatorCommand} "${backseatPath}"`);
             }
 
             let killed = false;
@@ -300,7 +300,7 @@ export class BssemblerRuntime extends EventEmitter {
             }, EMULATOR_TIMEOUT_MS);
 
             this.emulatorProcess.on('close', code => {
-                reject(new Error('emulator stopped')); // reject if still waiting for port
+                reject(new Error('emulator stopped unexpectedly')); // reject if still waiting for port
                 this.sendEvent('emulator-stopped', code);
             });
 
@@ -381,6 +381,21 @@ export class BssemblerRuntime extends EventEmitter {
         const remove = extracAddresses(removeBreakpoints);
         if (remove.length > 0) {
             debugConnection?.send(new RemoveBreakpoints(remove));
+        }
+    }
+
+    private spawn(command: string, args?: readonly string[]): ChildProcess {
+        this.sendEvent('log', `[debugger] spawn: "${command}" with ${JSON.stringify(args)}`);
+        this.sendEvent('log', `    for console: "${command}" ${args?.join(' ')}`);
+        return spawn(command, args);
+    }
+
+    private exec(command: string, options?: { encoding: "buffer" | null } & ExecOptions): ChildProcess {
+        this.sendEvent('log', `[debugger] exec: ${command}`);
+        if (options) {
+            return exec(command, options);
+        } else {
+            return exec(command);
         }
     }
 
