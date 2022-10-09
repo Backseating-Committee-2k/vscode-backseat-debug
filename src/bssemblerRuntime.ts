@@ -3,7 +3,7 @@ import { ChildProcess, exec, ExecOptions, spawn } from 'child_process';
 import { file as tmpFile } from 'tmp-promise';
 import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { Breaking, Continue, DebugConnection, Hello, HitBreakpoint, Pausing, Registers, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne, Terminate } from './debugConnection';
+import { Breaking, Continue, DebugConnection, Hello, HitBreakpoint, Pausing, BreakState, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne, Terminate } from './debugConnection';
 import { Readable } from 'stream';
 
 export interface FileAccessor {
@@ -81,6 +81,7 @@ export class BssemblerRuntime extends EventEmitter {
     private currentProgram?: string;
     private currentLine?: number;
     private registers: number[] = [];
+    private callStack: number[] = [];
 
     private debugConnection?: DebugConnection;
     private emulatorProcess?: ChildProcess;
@@ -132,6 +133,10 @@ export class BssemblerRuntime extends EventEmitter {
 
     public getCurrentLocation(): RuntimeLocation {
         return new RuntimeLocation(this.currentProgram ?? '', this.currentLine);
+    }
+
+    public getCallStack(): Array<number | undefined> {
+        return this.callStack.map(location => this.lineMapper.convertInstructionToLine(location));
     }
 
     /**
@@ -345,8 +350,9 @@ export class BssemblerRuntime extends EventEmitter {
             this.breakAtLocation(event.location, 'stop-on-pause');
         });
 
-        debugConnection.on('message-registers', (event: Registers) => {
+        debugConnection.on('message-breakstate', (event: BreakState) => {
             this.registers = event.registers;
+            this.callStack = event.call_stack;
         });
     }
 

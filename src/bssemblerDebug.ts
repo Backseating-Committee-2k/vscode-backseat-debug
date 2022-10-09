@@ -230,11 +230,23 @@ export class BssemblerDebugSession extends LoggingDebugSession {
 
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
         const location = this._runtime.getCurrentLocation();
+        const source = this.createSource(location.path);
+        const line = location.line ? this.convertDebuggerLineToClient(location.line) : undefined;
+        const stackFrames = [
+            new StackFrame(0, "Current Location", source, line),
+        ];
+
+        const callStack = this._runtime.getCallStack().reverse();
+        let i = 1;
+        for (const entryLine of callStack) {
+            const clientLine = entryLine ? this.convertDebuggerLineToClient(entryLine) : undefined;
+            stackFrames.push(new StackFrame(i, `Stack ${i}`, source, clientLine));
+            ++i;
+        }
+
         response.body = {
-            stackFrames: [
-                new StackFrame(0, "Position", this.createSource(location.path), location.line),
-            ],
-            totalFrames: 1,
+            stackFrames,
+            totalFrames: stackFrames.length,
         };
         this.sendResponse(response);
     }
@@ -272,7 +284,7 @@ export class BssemblerDebugSession extends LoggingDebugSession {
         const value = parseInt(args.value);
         this._runtime.setRegister(index, value);
 
-        response.body =  {
+        response.body = {
             value: args.value,
             type: 'integer',
         };

@@ -32,7 +32,7 @@ export class Continue { }
 export class StepOne { }
 export class Terminate { }
 
-export type Response = Hello | HitBreakpoint | Breaking | Pausing | Registers;
+export type Response = Hello | HitBreakpoint | Breaking | Pausing | BreakState;
 
 export class Hello {
     constructor(public readonly pid: number) { }
@@ -50,8 +50,12 @@ export class Pausing {
     constructor(public readonly location: Address) { }
 }
 
-export class Registers {
-    constructor(public readonly registers: number[]) { }
+export class BreakState {
+    constructor(
+        public readonly registers: number[],
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        public readonly call_stack: number[],
+    ) { }
 }
 
 export class DebugConnection extends EventEmitter {
@@ -123,7 +127,7 @@ export class DebugConnection extends EventEmitter {
             'Breakpoints',
             'Breaking',
             'Pausing',
-            'Registers',
+            'BreakState',
         ];
         for (const event of events) {
             if (json.hasOwnProperty(event)) {
