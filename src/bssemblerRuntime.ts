@@ -479,7 +479,13 @@ export class BssemblerRuntime extends EventEmitter {
             return undefined;
         }
 
-        const instruction = this.currentLines[line].trim();
+        let instruction = this.currentLines[line].trim();
+
+        // Remove comment from line.
+        const commentIndex = instruction.indexOf('//');
+        if (commentIndex >= 0) {
+            instruction = instruction.substring(0, commentIndex).trim();
+        }
 
         if (!instruction.toLowerCase().startsWith('call ')) {
             return undefined;

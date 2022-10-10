@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.4.3] - 2022-10-11
+
+### Fixed
+
+* Fixed label name parsing for lines that contain comments.
+
 ## [0.4.2] - 2022-10-10
 
 ### Added
