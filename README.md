@@ -35,16 +35,20 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-### 0.3.0
+### 0.4.x
+
+Added bssembler syntax highlighting provided by coder2k (mgerhold).
+
+### 0.3.x
 
 Added call stack.
 
 Moved repository to github organisation Backseating-Committee-2k.
 
-### 0.2.0
+### 0.2.x
 
 Added registers to the variable section and added setting options.
 
-### 0.1.0
+### 0.1.x
 
 Basic debugging support for bssembler.

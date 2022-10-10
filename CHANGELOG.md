@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.4.0] - 2022-10-10
+
+### Added
+
+* Added bssembler syntax highlighting provided by coder2k (mgerhold).
+
 ## [0.3.2] - 2022-10-10
 
 ### Changed
