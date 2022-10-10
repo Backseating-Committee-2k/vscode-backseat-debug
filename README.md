@@ -1,8 +1,10 @@
-# vscode-backseat-debug README
+# Backseat Debug
 
 Debug Extension for debugging backseat (`.bs`) and bssembler (`.bsm`) applications.
 
 This project is still a work in progress as are the backseat language and its platforms. Debugging is only implemented for `.bsm` files so far.
+
+![Extension Usage Example](images/BackseatDebug.png)
 
 ## Features
 
