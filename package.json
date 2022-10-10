@@ -68,7 +68,15 @@
                 "id": "bssembler",
                 "extensions": [
                     ".bsm"
-                ]
+                ],
+                "configuration": "./bssembler-language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "bssembler",
+                "scopeName": "source.bssembler",
+                "path": "./syntaxes/bssembler.tmLanguage.json"
             }
         ],
         "menus": {

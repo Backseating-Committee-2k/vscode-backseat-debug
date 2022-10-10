@@ -1,0 +1,87 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "bssembler",
+    "scopeName": "source.bssembler",
+    "patterns": [
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#labels"
+        },
+        {
+            "include": "#registers"
+        },
+        {
+            "include": "#words"
+        },
+        {
+            "include": "#identifiers"
+        },
+        {
+            "include": "#comments"
+        }
+    ],
+    "repository": {
+        "keywords": {
+            "patterns": [{
+                "name": "keyword.control.bssembler",
+                "match": "(?i)(\\b(copy|add|halt|add_carry|sub|sub_carry|mult|divmod|and|or|xor|not|lshift|rshift|add|sub|comp|push|pop|call|return|jump|jump_eq|jump_gt|jump_lt|jump_gteq|jump_lteq|jump_zero|jump_not_zero|jump_carry|jump_not_carry|jump_divide_by_zero|jump_not_divide_by_zero|noop|get_key|poll_time|swap|draw_buffer_addr|poll_cycles|dump_registers|dump_memory|assert|debug_break|print|comp_eq|comp_neq|comp_gt|comp_ge|comp_lt|comp_le|checkpoint)\\b)|(\\.string|\\.bytes)(?-i)"
+            }]
+        },
+        "strings": {
+            "name": "string.quoted.double.bssembler",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.bssembler",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "labels": {
+            "patterns": [
+                {
+                    "name": "entity.name.tag",
+                    "match": "((\\$\"[ -~]*\")|([a-zA-Z_\\$%][a-zA-Z_\\$%0-9\\-]*))\\s*:"
+                }
+            ]
+        },
+        "registers": {
+            "patterns": [
+                {
+                    "name": "variable",
+                    "match": "(?i)(\\*?r\\d+)|sp|ip(?-i)"
+                }
+            ]
+        },
+        "words": {
+            "patterns": [
+                {
+                    "name": "constant.numeric",
+                    "match": "(0x[0-9A-Fa-f]+)|(0b[01]+)|(\\d+)"
+                }
+            ]
+        },
+        "identifiers": {
+            "patterns": [
+                {
+                    "name": "constant.language",
+                    "match": "((\\$\"[ -~]*\")|([a-zA-Z_\\$%][a-zA-Z_\\$%0-9\\-]*))"
+                }
+            ]
+        },
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash",
+                    "match": "//.*"
+                }
+            ]
+        }
+    }
+}
