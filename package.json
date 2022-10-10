@@ -23,10 +23,10 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/TheJP/vscode-backseat-debug.git"
+        "url": "https://github.com/Backseating-Committee-2k/vscode-backseat-debug.git"
     },
     "bugs": {
-        "url": "https://github.com/TheJP/vscode-backseat-debug/issues"
+        "url": "https://github.com/Backseating-Committee-2k/vscode-backseat-debug/issues"
     },
     "scripts": {
         "compile": "tsc -p ./",
