@@ -5,6 +5,7 @@ import { createWriteStream } from 'fs';
 import { readFile } from 'fs/promises';
 import { Breaking, Continue, DebugConnection, Hello, HitBreakpoint, Pausing, BreakState, RemoveBreakpoints, SetBreakpoints, SetRegister, StartExecution, StepOne, Terminate } from './debugConnection';
 import { Readable } from 'stream';
+import { TextDecoder } from 'util';
 
 export interface FileAccessor {
     readFile(path: string): Promise<Uint8Array>;
@@ -38,6 +39,10 @@ class RuntimeBreakpoints {
 
 export class RuntimeLocation {
     constructor(public readonly path: string, public readonly line?: number) { }
+}
+
+export class RuntimeStackFrame {
+    constructor(public readonly line?: number, public readonly name?: string) { }
 }
 
 class LineToInstructionMapper {
@@ -79,6 +84,7 @@ export class BssemblerRuntime extends EventEmitter {
     private linesLoaded = false;
 
     private currentProgram?: string;
+    private currentLines?: string[];
     private currentLine?: number;
     private registers: number[] = [];
     private callStack: number[] = [];
@@ -135,8 +141,15 @@ export class BssemblerRuntime extends EventEmitter {
         return new RuntimeLocation(this.currentProgram ?? '', this.currentLine);
     }
 
-    public getCallStack(): Array<number | undefined> {
-        return this.callStack.map(location => this.lineMapper.convertInstructionToLine(location));
+    public getCallStack(): RuntimeStackFrame[] {
+        return [
+            ...this.callStack.map(location => {
+                const line = this.lineMapper.convertInstructionToLine(location);
+                const label = this.getCallLabel(line);
+                return new RuntimeStackFrame(line, label);
+            }),
+            new RuntimeStackFrame(this.currentLine),
+        ];
     }
 
     /**
@@ -161,6 +174,7 @@ export class BssemblerRuntime extends EventEmitter {
         const { fd: _mapFd, path: mapFilePath, cleanup: cleanupMapFile } = await tmpFile();
 
         try {
+            const programContent = this.fileAccessor.readFile(program);
             await this.bssemble(program, backseatPath, mapFilePath, bssemblerCommand);
             await this.readMapFile(mapFilePath);
             this.validateBreakpoints();
@@ -169,6 +183,7 @@ export class BssemblerRuntime extends EventEmitter {
             this.listenToConnectionEvents(debugConnection);
             this.initialiseDebugger(debugConnection, stopOnEntry);
             this.debugConnection = debugConnection;
+            this.currentLines = this.decodeSource(await programContent);
         } catch (error) {
             this.terminate();
             this.emulatorProcess = undefined;
@@ -191,8 +206,14 @@ export class BssemblerRuntime extends EventEmitter {
         return [...this.registers];
     }
 
-    public setRegister(index: number, value: number) {
+    public setRegister(name: string, value: number): boolean {
+        const index = this.matchRegister(name);
+        if (index === false) {
+            return false;
+        }
+
         this.debugConnection?.send(new SetRegister(index, value));
+        return !!this.debugConnection;
     }
 
     private async bssemble(program: string, backseatPath: string, mapFilePath: string, bssemblerCommand?: string): Promise<void> {
@@ -437,6 +458,47 @@ export class BssemblerRuntime extends EventEmitter {
                 setTimeout(() => lineCallback(buffer), 0);
             }
         });
+    }
+
+    private matchRegister(register: string): number | false {
+        const match = register.match(/^R(0|[1-9][0-9]*)$/i);
+        return match ? parseInt(match[1]) : false;
+    }
+
+    private decodeSource(content: Uint8Array): string[] {
+        // Adding empty line at the beginning, because lines are indexed starting at 1.
+        return ['', ...new TextDecoder().decode(content).split(/\r?\n/)];
+    }
+
+    private getCallLabel(line: number | undefined): string | undefined {
+        if (!line || !this.currentLines) {
+            return undefined;
+        }
+
+        if (line >= this.currentLines.length) {
+            return undefined;
+        }
+
+        const instruction = this.currentLines[line].trim();
+
+        if (!instruction.toLowerCase().startsWith('call ')) {
+            return undefined;
+        }
+
+        let label = instruction.substring('call '.length).trim();
+
+        // Filter out CallRegister and CallPointer opcodes.
+        if (this.matchRegister(label) !== false) {
+            return undefined;
+        }
+
+        // Demangle backseat function names.
+        const match = label.match(/^\$"::(.*)"$/);
+        if (match) {
+            label = match[1];
+        }
+
+        return label;
     }
 
     private sendEvent(event: string, ...args: any[]): void {

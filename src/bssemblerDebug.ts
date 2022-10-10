@@ -231,18 +231,14 @@ export class BssemblerDebugSession extends LoggingDebugSession {
     protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
         const location = this._runtime.getCurrentLocation();
         const source = this.createSource(location.path);
-        const line = location.line ? this.convertDebuggerLineToClient(location.line) : undefined;
-        const stackFrames = [
-            new StackFrame(0, "Current Location", source, line),
-        ];
 
         const callStack = this._runtime.getCallStack().reverse();
-        let i = 1;
-        for (const entryLine of callStack) {
-            const clientLine = entryLine ? this.convertDebuggerLineToClient(entryLine) : undefined;
-            stackFrames.push(new StackFrame(i, `Stack ${i}`, source, clientLine));
-            ++i;
-        }
+        const stackFrames = callStack.map((frame, i) => {
+            const clientLine = frame.line ? this.convertDebuggerLineToClient(frame.line) : undefined;
+            let name = i + 1 < callStack.length ? callStack[i + 1].name : 'Frame 0';
+            name = name ?? `Frame ${callStack.length - (i + 1)}`;
+            return new StackFrame(i, name, source, clientLine);
+        });
 
         response.body = {
             stackFrames,
@@ -274,15 +270,10 @@ export class BssemblerDebugSession extends LoggingDebugSession {
             return;
         }
 
-        const registerNumber = /^R(0|[1-9][0-9]*)$/i;
-        const match = args.name.match(registerNumber);
-        if (!match) {
+        const success = this._runtime.setRegister(args.name, parseInt(args.value));
+        if (!success) {
             return;
         }
-
-        const index = parseInt(match[1]);
-        const value = parseInt(args.value);
-        this._runtime.setRegister(index, value);
 
         response.body = {
             value: args.value,

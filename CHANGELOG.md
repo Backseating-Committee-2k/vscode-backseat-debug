@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.4.2] - 2022-10-10
+
+### Added
+
+* Showing label names in call stack.
+* Demangling backseat function names in call stack.
+
 ## [0.4.1] - 2022-10-10
 
 ### Added
