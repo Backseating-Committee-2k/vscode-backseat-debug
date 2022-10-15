@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.4.4] - 2022-10-15
+
+### Added
+
+* Added missing mnemonics to syntax highlighting.
+
 ## [0.4.3] - 2022-10-11
 
 ### Fixed
