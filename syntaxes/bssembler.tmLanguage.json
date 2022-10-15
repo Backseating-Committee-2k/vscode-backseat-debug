@@ -29,7 +29,7 @@
         "keywords": {
             "patterns": [{
                 "name": "keyword.control.bssembler",
-                "match": "(?i)(\\b(copy|add|halt|add_carry|sub|sub_carry|mult|divmod|and|or|xor|not|lshift|rshift|add|sub|comp|push|pop|call|return|jump|jump_eq|jump_gt|jump_lt|jump_gteq|jump_lteq|jump_zero|jump_not_zero|jump_carry|jump_not_carry|jump_divide_by_zero|jump_not_divide_by_zero|noop|get_key|poll_time|swap|draw_buffer_addr|poll_cycles|dump_registers|dump_memory|assert|debug_break|print|comp_eq|comp_neq|comp_gt|comp_ge|comp_lt|comp_le|checkpoint)\\b)|(\\.string|\\.bytes)(?-i)"
+                "match": "(?i)(\\b(ADD|ADD_CARRY|AND|ASSERT|CALL|CHECKPOINT|COMP|COMP_EQ|COMP_GE|COMP_GT|COMP_LE|COMP_LT|COMP_NEQ|COPY|COPY_BYTE|COPY_HALFWORD|DEBUG_BREAK|DIVMOD|DRAW_BUFFER_ADDR|DUMP_MEMORY|DUMP_REGISTERS|GET_KEY|HALT|JUMP|JUMP_CARRY|JUMP_DIVIDE_BY_ZERO|JUMP_EQ|JUMP_GT|JUMP_GTEQ|JUMP_LT|JUMP_LTEQ|JUMP_NOT_CARRY|JUMP_NOT_DIVIDE_BY_ZERO|JUMP_NOT_ZERO|JUMP_ZERO|LSHIFT|MULT|NOOP|NOT|OFFSET_COPY|OFFSET_COPY_BYTE|OFFSET_COPY_HALFWORD|OR|POLL_CYCLES|POLL_TIME|POP|PRINT|PUSH|RETURN|RSHIFT|SUB|SUB_CARRY|SWAP|XOR)\\b)|(\\.string|\\.bytes)(?-i)"
             }]
         },
         "strings": {
