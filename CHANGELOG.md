@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.4.5] - 2022-10-15
+
+### Added
+
+* Emulator no longer freezing during debug session.
+* See [BackseatSafeSystem2k/pull/35](https://github.com/Backseating-Committee-2k/BackseatSafeSystem2k/pull/35) for details.
+
 ## [0.4.4] - 2022-10-15
 
 ### Added
