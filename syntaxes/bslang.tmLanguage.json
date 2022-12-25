@@ -1,0 +1,102 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Backseat language",
+    "scopeName": "source.bslang",
+    "TODO": "this is just WIP, it has to be improoved a lot!",
+    "patterns": [
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#literals"
+        },
+        {
+            "include": "#identifiers"
+        },
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#type"
+        },
+        {
+            "include": "#function"
+        }
+    ],
+    "repository": {
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.bslang",
+                    "match": "(\\b(if|else|else if|while|do|let|return|function|break|continue|mut|export)\\b)"
+                }
+            ]
+        },
+        "strings": {
+            "name": "string.quoted.double.bslang",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.bslang",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "literals": {
+            "patterns": [
+                {
+                    "name": "literal.integer",
+                    "match": "(0o([0-7]+_?)+)|(0x([\\dA-Fa-f]+_?)+)|(0b([01]+_?)+)|(\\d+_?)+"
+                },
+                {
+                    "name": "literal.char",
+                    "match": "('(\\'|[ -\\[\\]-~]|\\[n\\tnvfr0])')"
+                }
+            ]
+        },
+        "identifiers": {
+            "patterns": [
+                {
+                    "name": "constant.language",
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b"
+                }
+            ]
+        },
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash",
+                    "match": "//.*"
+                },
+                {
+                    "name": "comment.multiline.",
+                    "match": "/\\\\*.*\\\\*"
+                }
+            ]
+        }
+    },
+    "type": {
+        "patterns": [
+            {
+                "name": "type.variable",
+                "match": "\\s?:\\s?(U32|Char|Bool|Nothing)"
+            },
+            {
+                "name": "type.function",
+                "match": "function\\s*.*(.*)\\s*~>\\s*(U32|Char|Bool|Nothing)"
+            }
+        ]
+    },
+    "function": {
+        "patterns": [
+            {
+                "name": "(export)?\\s+function\\s+(.*)\\(.*\\) {",
+                "match": "//.*"
+            }
+        ]
+    }
+}

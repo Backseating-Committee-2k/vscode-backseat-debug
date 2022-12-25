@@ -1,0 +1,3 @@
+function main() ~> Nothing {
+    let a: U32 = 4_200;
+}

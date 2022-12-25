@@ -70,6 +70,13 @@
                     ".bsm"
                 ],
                 "configuration": "./bssembler-language-configuration.json"
+            },
+            {
+                "id": "bslang",
+                "extensions": [
+                    ".bs"
+                ],
+                "configuration": "./bslang-language-configuration.json"
             }
         ],
         "grammars": [
@@ -77,6 +84,11 @@
                 "language": "bssembler",
                 "scopeName": "source.bssembler",
                 "path": "./syntaxes/bssembler.tmLanguage.json"
+            },
+            {
+                "language": "bslang",
+                "scopeName": "source.bslang",
+                "path": "./syntaxes/bslang.tmLanguage.json"
             }
         ],
         "menus": {
