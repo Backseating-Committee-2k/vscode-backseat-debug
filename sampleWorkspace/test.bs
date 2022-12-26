@@ -17,6 +17,7 @@ type THIS_SHOULD_BE_HIGHLIGHTED {
 * @author test
 */
 type T {
+// TODO is in type T {S {}} S or T a struct name?
     S {
         // this comment should be allowed
         n: U32,
@@ -26,7 +27,7 @@ type T {
         b: Bool,
     },
     U {
-        /** And escpecially these too
+        /** And specially these too
         * @description a struct field description
         */
         s1: S,
@@ -40,11 +41,23 @@ type T {
         r3: Function(Bool, Function(Char, U32)),
         s4: mutable S,
         r4: -> S,
+        z4: Function(Char) ~> Char,
         s5: mutable -> mutable Function([U32; 1]),
         s6: [[[Bool; 9]; 9]],
     },
     Empty {},
 }
+
+namespace test {
+    //test namespace
+    //TODO: is an export keyword possible here?
+    type T {
+        U{
+            h:Function(U32) ~> Nothing,
+        },
+    }
+}
+
 
 function get_array() ~> [Bool; 4]{
     return [false, false, true, false];
