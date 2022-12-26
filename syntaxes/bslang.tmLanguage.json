@@ -56,22 +56,25 @@
                     "name": "entity.name.type.bslang"
                 },
                 "3": {
-                    "name": "punctuation.definition.type.bslang"
+                    "name": "punctuation.definition.type.begin.bslang"
                 }
             },
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.definition.type.bslang"
+                    "name": "punctuation.definition.type.end.bslang"
                 }
             },
             "patterns": [
                 {
                     "include": "#struct_member"
+                },
+                {
+                    "include": "#comment"
                 }
             ]
         },
         "struct_member": {
-            "begin": "([A-Z][a-zA-Z0-9_]*)\\s+({)",
+            "begin": "([A-Z][a-zA-Z0-9_]*)\\s*({)",
             "end": "(})(,?)",
             "beginCaptures": {
                 "1": {
@@ -100,7 +103,8 @@
         },
         "struct_member_field": {
             "begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
-            "end": "(,)",
+            "name": "entity.name.struct_field.bslang",
+            "end": "(,)(?=$)",
             "beginCaptures": {
                 "1": {
                     "name": "variable.name.struct_field.bslang"
@@ -153,10 +157,10 @@
         "function_type": {
             "patterns": [
                 {
-                    "include": "#function_type_without_return"
+                    "include": "#function_type_with_return"
                 },
                 {
-                    "include": "#function_type_with_return"
+                    "include": "#function_type_without_return"
                 }
             ]
         },
@@ -177,6 +181,9 @@
                     "endCaptures": {
                         "1": {
                             "name": "punctuation.definition.type.function.end.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal"
                         }
                     },
                     "patterns": [
@@ -204,15 +211,71 @@
         "function_type_with_return": {
             "patterns": [
                 {
-                    "name": "entity.name.type.function.with_return_type.bslang",
-                    "begin": ".{0}",
-                    "end": "(~>)",
-                    "endCaptures":{
-                        "0": {"name": "keyword.operator.return_type.bslang"}
-                    }
+                    "name": "entity.name.type.function.with_return.bslang",
+                    "begin": "(Function)(\\()(?=[^\n]*~>)",
+                    "end": "(?<=~>[^\n]*)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "entity.name.type.function.keyword.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.definition.type.function.with_return.begin.bslang"
+                        }
+                    },
                     "patterns": [
                         {
-                            "include": "#function_type_without_return"
+                            "include": "#type"
+                        },
+                        {
+                            "begin": "(,)",
+                            "end": ".{0}",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "punctuation.separator.comma.function.parameters.bslang"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#type"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "entity.name.type.function.return_type.bslang",
+                            "begin": "(\\))\\s*(~>)",
+                            "end": ".{0}",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "punctuation.definition.type.function.with_return.end.bslang"
+                                },
+                                "2": {
+                                    "name": "keyword.operator.return_type.bslang"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#type"
+                                },
+                                {
+                                    "begin": "(\\()",
+                                    "end": "(\\))",
+                                    "beginCaptures": {
+                                        "1": {
+                                            "name": "meta.brace.round.return_type.begin.bslang"
+                                        }
+                                    },
+                                    "endCaptures": {
+                                        "1": {
+                                            "name": "meta.brace.round.return_type.end.bslang"
+                                        }
+                                    },
+                                    "patterns": [
+                                        {
+                                            "include": "#type"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
@@ -355,16 +418,13 @@
                     "match": "\\s*\\*\\s+(@)([a-z][a-zA-Z0-9_\\.]*)\\s+(.*)",
                     "captures": {
                         "1": {
-                            "name": "punctuation.decorator.  .bs_doc"
+                            "name": "punctuation.decorator.bs_doc"
                         },
                         "2": {
                             "name": "storage.type.class.bs_doc"
                         },
                         "3": {
-                            "name": "comment.block.documentation.bs_doc,raw"
-                        },
-                        "4": {
-                            "name": "invalid"
+                            "name": "comment.block.documentation.bs_doc.raw"
                         }
                     }
                 },
@@ -374,9 +434,6 @@
                     "captures": {
                         "1": {
                             "name": "comment.block.documentation.bslang"
-                        },
-                        "2": {
-                            "name": "invalid"
                         }
                     }
                 }
@@ -385,8 +442,27 @@
         "function": {
             "patterns": [
                 {
-                    "name": "",
-                    "match": "(export)?\\s+function\\s+(.*)\\(.*\\) {"
+                    "name": "entity.function.bslang",
+                    "begin": "(export)?\\s+(function)(\\()",
+                    "end": "}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "control."
+                        },
+                        "2": {
+                            "name": "storage.type.function.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "match": ") ",
+                            "name": "rt"
+                        },
+                        {
+                            "match": "...args)",
+                            "name": "re"
+                        }
+                    ]
                 }
             ]
         },
@@ -493,7 +569,7 @@
                     "match": "('(\\[n\\tnvfr0'])')"
                 },
                 {
-                    "name": "invalid",
+                    "name": "invalid.illegal",
                     "match": "('(\\[^n\\tnvfr0'])')"
                 },
                 {
