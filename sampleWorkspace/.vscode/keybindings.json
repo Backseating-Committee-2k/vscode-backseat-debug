@@ -1,0 +1,6 @@
+[
+    {
+        "key": "ctrl+i ctrl+i",
+        "command": "editor.action.inspectTMScopes"
+    }
+]

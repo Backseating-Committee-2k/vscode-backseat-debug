@@ -1,3 +1,108 @@
+import std;
+// a comment here :) 
+
+/*
+a block comment 
+*/
+
+// empty block, this should work too!!
+/**/
+type THIS_SHOULD_BE_HIGHLIGHTED {
+    J {}
+}
+
+/**
+* this is a documentation comment
+* @description A test type
+* @author test
+*/
+type T {
+    S {
+        n: U32,
+        b: Bool,
+    },
+    U {
+        s1: S,
+        s2: S,
+    },
+    Empty {},
+}
+
+function get_array() ~> [Bool; 4]{
+    return [false, false, true, false];
+}
+
 function main() ~> Nothing {
     let a: U32 = 4_200;
+    let b: Bool = false;
+    let c : Bool = true;
+    std::assert(not b);
+    let d: Char = 'a';
+    '\n';
+    ' ';
+    '\\';
+    '\'';
+    '~';
+    '"';
+    let ptr: mutable Function(U32) ~> Bool = f;
+    let functions = [f, g, f, f, f, g];
+    let num_functions = value_size(functions) / value_size(functions[0]);
+
+     for ;; {
+        break;
+        continue;
+        let i: U32 = 0;
+    }
+
+     if n > 4 {
+        bsm {
+            checkpoint 1
+        }
+    } else {
+        bsm {
+            checkpoint 3
+        }
+    }
+
+     if n > 4 {
+        bsm {
+            checkpoint 1
+        }
+    } else {
+        bsm {
+            checkpoint 3
+        }
+    }
+
+}
+
+export function assert(condition: Bool) {
+    // some comment here
+    bsm {
+        copy_byte *R0, R1
+        assert R1, 1
+    }
+    /*
+    a multiline comment with * in it and also /*
+    */
+}
+
+
+namespace std {
+
+    function assert_equals(lhs: Nothing, rhs: Nothing) { }
+
+    export function swap(lhs: ->mutable U32, rhs: ->mutable U32) {
+            let temp: U32 = lhs!;
+            lhs! = rhs!;
+            rhs! = temp;
+    }
+
+
+    function a() ~> Nothing {
+        return nothing;
+    }
+
+
+
 }

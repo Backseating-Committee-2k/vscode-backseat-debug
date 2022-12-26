@@ -2,40 +2,231 @@
     "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
     "name": "Backseat language",
     "scopeName": "source.bslang",
-    "TODO": "this is just WIP, it has to be improoved a lot!",
+    "foldingStartMarker": "{",
+    "foldingStopMarker": "}",
+    "TODO": "this is just WIP, it has to be improved a lot!",
     "patterns": [
         {
-            "include": "#keywords"
+            "include": "#import"
         },
         {
-            "include": "#strings"
+            "include": "#struct"
         },
         {
-            "include": "#literals"
-        },
-        {
-            "include": "#identifiers"
-        },
-        {
-            "include": "#comments"
-        },
-        {
-            "include": "#type"
+            "include": "#comment"
         },
         {
             "include": "#function"
+        },
+
+        {
+            "include": "#namespace"
         }
     ],
     "repository": {
-        "keywords": {
+        "import": {
+            "begin": "(import)\\s+",
+            "end": "(;)",
+            "beginCaptures": {
+                "0": {
+                    "name": "keyword.control.import.bslang"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.terminator.import.bslang"
+                }
+            },
             "patterns": [
                 {
-                    "name": "keyword.control.bslang",
-                    "match": "(\\b(if|else|else if|while|do|let|return|function|break|continue|mut|export)\\b)"
+                    "name": "entity.name.tag.import.bslang",
+                    "match": "([a-z][a-zA-Z0-9_\\.]*)"
                 }
             ]
         },
-        "strings": {
+        "struct": {
+            "begin": "(type)\\s+([A-Z][a-zA-Z0-9_]*)\\s+({)",
+            "end": "(})",
+            "name": "entity.struct.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.type.bslang"
+                },
+                "2": {
+                    "name": "entity.name.type.bslang"
+                },
+                "3": {
+                    "name": "punctuation.definition.type.bslang"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.type.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#struct_member"
+                }
+            ]
+        },
+        "struct_member": {
+            "begin": "([A-Z][a-zA-Z0-9_]*)\\s+({)",
+            "end": "(})(,?)",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.bslang",
+                    "TODO": "is in type T {S {}} S or T a struct name?"
+                },
+                "2": {
+                    "name": "punctuation.definition.struct.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.struct.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.comma.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#struct_member_field"
+                }
+            ]
+        },
+        "struct_member_field": {
+            "begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+            "end": "(,)",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.name.struct_field.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.colon.bslang"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.separator.comma.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "name": "entity.name.type.bslang",
+                    "match": "([A-Z][a-zA-Z0-9_]*)"
+                },
+                {
+                    "include": "#predefined_type"
+                }
+            ]
+        },
+        "comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.bslang",
+                    "match": "//.*"
+                },
+                {
+                    "name": "comment.block.block.empty.bslang",
+                    "match":"/\\**/"
+                },
+                {
+                    "name": "comment.block.documentation.bslang",
+                    "begin": "/\\*{2}",
+                    "end": "\\*/",
+                    "patterns": [
+                        {
+                            "match": ".+?(?=\\*/)"
+                        },
+                        {
+                            "include": "#bs_doc"
+                        }
+                    ]
+                },
+                {
+                    "name": "comment.block.bslang",
+                    "begin": "/\\*",
+                    "end": "\\*/",
+                    "patterns": [
+                        {
+                            "match": ".+?(?=\\*/)"
+                        }
+                    ]
+                }
+            ]
+        },
+        "bs_doc": {
+            "patterns": [
+                {
+                    "name": "comment.block.documentation.bs_doc",
+                    "match": "\\s*\\*\\s+(@)([a-z][a-zA-Z0-9_\\.]*)\\s+(.*)",
+                    "captures": {
+                        "1": {
+                            "name": "punctuation.decorator.  .bs_doc"
+                        },
+                        "2": {
+                            "name": "storage.type.class.bs_doc"
+                        },
+                        "3": {
+                            "name": "comment.block.documentation.bs_doc,raw"
+                        },
+                        "4": {
+                            "name": "invalid"
+                        }
+                    }
+                },
+                {
+                    "name": "comment.block.documentation.bslang",
+                    "match": "\\s*\\*\\s+(.*)",
+                    "captures": {
+                        "1": {
+                            "name": "comment.block.documentation.bslang"
+                        },
+                        "2": {
+                            "name": "invalid"
+                        }
+                    }
+                }
+            ]
+        },
+        "keyword": {
+            "patterns": [
+                {
+                    "name": "keyword.control.bslang",
+                    "match": "(\\b(if|else|else if|while|do|let|return|function|export|loop|break|continue|import)\\b)"
+                }
+            ]
+        },
+        "operator": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.bslang",
+                    "match": "(+|\\-|\\*|\\+|mod|%|@|!)"
+                }
+            ]
+        },
+        "inline_bssembler": {
+            "begin": "(bsm)\\s+({)",
+            "end": "(})",
+            "TODO": "give captures names!",
+            "contentName": "meta.embedded.block.bssembler",
+            "patterns": [
+                {
+                    "name": "meta.embedded.block.bssembler",
+                    "match": ".*"
+                }
+            ]
+        },
+        "statement": {
+            "patterns": [
+                {
+                    "include": "#inline_bssembler"
+                }
+            ]
+        },
+        "string": {
             "name": "string.quoted.double.bslang",
             "begin": "\"",
             "end": "\"",
@@ -46,57 +237,65 @@
                 }
             ]
         },
-        "literals": {
+        "literal": {
             "patterns": [
                 {
-                    "name": "literal.integer",
+                    "name": "constant.numeric",
                     "match": "(0o([0-7]+_?)+)|(0x([\\dA-Fa-f]+_?)+)|(0b([01]+_?)+)|(\\d+_?)+"
                 },
                 {
-                    "name": "literal.char",
-                    "match": "('(\\'|[ -\\[\\]-~]|\\[n\\tnvfr0])')"
+                    "name": "constant.character",
+                    "match": "('([\\w -\\[\\]-~])')"
+                },
+                {
+                    "name": "constant.character.escape",
+                    "match": "('(\\[n\\tnvfr0'])')"
+                },
+                {
+                    "name": "invalid",
+                    "match": "('(\\[^n\\tnvfr0'])')"
+                },
+                {
+                    "name": "constant.language",
+                    "match": "(true|false|nothing)"
                 }
             ]
         },
-        "identifiers": {
+        "identifier": {
             "patterns": [
                 {
-                    "name": "constant.language",
+                    "name": "variable.name",
                     "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b"
                 }
             ]
         },
-        "comments": {
+        "predefined_type": {
             "patterns": [
                 {
-                    "name": "comment.line.double-slash",
-                    "match": "//.*"
+                    "name": "entity.name.type",
+                    "match": "(U32|Char|Bool|Nothing)"
+                }
+            ]
+        },
+        "type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type",
+                    "match": "\\s?:\\s?(U32|Char|Bool|Nothing)"
                 },
                 {
-                    "name": "comment.multiline.",
-                    "match": "/\\\\*.*\\\\*"
+                    "name": "type.function",
+                    "match": "function\\s*.*(.*)\\s*~>\\s*(U32|Char|Bool|Nothing)"
+                }
+            ]
+        },
+        "function": {
+            "patterns": [
+                {
+                    "name": "",
+                    "match": "(export)?\\s+function\\s+(.*)\\(.*\\) {"
                 }
             ]
         }
-    },
-    "type": {
-        "patterns": [
-            {
-                "name": "type.variable",
-                "match": "\\s?:\\s?(U32|Char|Bool|Nothing)"
-            },
-            {
-                "name": "type.function",
-                "match": "function\\s*.*(.*)\\s*~>\\s*(U32|Char|Bool|Nothing)"
-            }
-        ]
-    },
-    "function": {
-        "patterns": [
-            {
-                "name": "(export)?\\s+function\\s+(.*)\\(.*\\) {",
-                "match": "//.*"
-            }
-        ]
     }
 }
