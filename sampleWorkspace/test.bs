@@ -18,12 +18,30 @@ type THIS_SHOULD_BE_HIGHLIGHTED {
 */
 type T {
     S {
+        // this comment should be allowed
         n: U32,
+        /*
+        This comment too
+        */
         b: Bool,
     },
     U {
+        /** And escpecially these too
+        * @description a struct field description
+        */
         s1: S,
         s2: S,
+    },
+    A {
+        s1: [Bool;5],
+        s2: [U32],
+        s3: Function(Bool),
+        t3: Function(Bool, Char),
+        r3: Function(Bool, Function(Char, U32)),
+        s4: mutable S,
+        r4: -> S,
+        s5: mutable -> mutable Function([U32; 1]),
+        s6: [[[Bool; 9]; 9]],
     },
     Empty {},
 }
@@ -45,6 +63,9 @@ function main() ~> Nothing {
     '~';
     '"';
     let ptr: mutable Function(U32) ~> Bool = f;
+    let ptr2: mutable -> mutable U32 = a@;
+    //TODO: is there a nullptr or similar keyword?
+    let long_ptr: -> -> -> -> U32 = 0;
     let functions = [f, g, f, f, f, g];
     let num_functions = value_size(functions) / value_size(functions[0]);
 
@@ -86,6 +107,14 @@ export function assert(condition: Bool) {
     a multiline comment with * in it and also /*
     */
 }
+
+//TODO: is this valid syntax (the default value for the parameter?)
+function def(hello: Char = '\n') ~> Char {
+    //TODO: is this syntax valid?
+    let u, i,o : Char;
+
+}
+
 
 
 namespace std {

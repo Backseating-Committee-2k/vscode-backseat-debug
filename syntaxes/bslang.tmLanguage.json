@@ -5,6 +5,7 @@
     "foldingStartMarker": "{",
     "foldingStopMarker": "}",
     "TODO": "this is just WIP, it has to be improved a lot!",
+    "regex-docs": "https://macromates.com/manual/en/regular_expressions",
     "patterns": [
         {
             "include": "#import"
@@ -28,12 +29,12 @@
             "begin": "(import)\\s+",
             "end": "(;)",
             "beginCaptures": {
-                "0": {
+                "1": {
                     "name": "keyword.control.import.bslang"
                 }
             },
             "endCaptures": {
-                "0": {
+                "1": {
                     "name": "punctuation.terminator.import.bslang"
                 }
             },
@@ -60,7 +61,7 @@
                 }
             },
             "endCaptures": {
-                "0": {
+                "1": {
                     "name": "punctuation.definition.type.bslang"
                 }
             },
@@ -87,10 +88,13 @@
                     "name": "punctuation.definition.struct.bslang"
                 },
                 "2": {
-                    "name": "punctuation.separator.comma.bslang"
+                    "name": "punctuation.separator.comma.struct.member.bslang"
                 }
             },
             "patterns": [
+                {
+                    "include": "#comment"
+                },
                 {
                     "include": "#struct_member_field"
                 }
@@ -104,21 +108,183 @@
                     "name": "variable.name.struct_field.bslang"
                 },
                 "2": {
-                    "name": "punctuation.separator.colon.bslang"
+                    "name": "punctuation.separator.colon.struct.field.bslang"
                 }
             },
             "endCaptures": {
-                "0": {
-                    "name": "punctuation.separator.comma.bslang"
+                "1": {
+                    "name": "punctuation.separator.comma.struct.field.bslang"
                 }
             },
             "patterns": [
                 {
-                    "name": "entity.name.type.bslang",
-                    "match": "([A-Z][a-zA-Z0-9_]*)"
+                    "include": "#type"
+                }
+            ]
+        },
+        "type": {
+            "patterns": [
+                {
+                    "include": "#builtin_type"
                 },
                 {
-                    "include": "#predefined_type"
+                    "include": "#mutable_type"
+                },
+                {
+                    "include": "#pointer_type"
+                },
+                {
+                    "include": "#custom_type"
+                }
+            ]
+        },
+        "builtin_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.builtin.bslang",
+                    "match": "(U32|Char|Bool|Nothing)"
+                },
+                {
+                    "include": "#function_type"
+                },
+                {
+                    "include": "#array_type"
+                }
+            ]
+        },
+        "function_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.function.bslang",
+                    "begin": "(Function)(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "entity.name.type.function.keyword.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.definition.type.function.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.type.function.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        },
+                        {
+                            "begin": "(,)",
+                            "end": ".{0}",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "punctuation.separator.comma.function.parameters.bslang"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#type"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "array_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.array.bslang",
+                    "begin": "(\\[)",
+                    "end": "(\\])",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.type.array.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.type.array.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        },
+                        {
+                            "include": "#array_with_length"
+                        }
+                    ]
+                }
+            ]
+        },
+        "array_with_length": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.array.with_length.bslang",
+                    "begin": ".{0}",
+                    "end": "(;)\\s*(\\d+)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.type.array.with_length.bslang"
+                        },
+                        "2": {
+                            "name": "constant.numeric.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "mutable_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.mutable.bslang",
+                    "begin": "(mutable)\\s+",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.mutable.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "pointer_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.pointer.bslang",
+                    "begin": "(->)\\s*",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.pointer.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "custom_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.custom.bslang",
+                    "match": "([A-Z][a-zA-Z0-9_]*)"
                 }
             ]
         },
@@ -130,7 +296,7 @@
                 },
                 {
                     "name": "comment.block.block.empty.bslang",
-                    "match":"/\\**/"
+                    "match": "/\\**/"
                 },
                 {
                     "name": "comment.block.documentation.bslang",
@@ -195,7 +361,7 @@
             "patterns": [
                 {
                     "name": "keyword.control.bslang",
-                    "match": "(\\b(if|else|else if|while|do|let|return|function|export|loop|break|continue|import)\\b)"
+                    "match": "(\\b(if|else|else if|while|do|let|return|function|export|loop|break|continue)\\b)"
                 }
             ]
         },
@@ -203,7 +369,7 @@
             "patterns": [
                 {
                     "name": "keyword.operator.bslang",
-                    "match": "(+|\\-|\\*|\\+|mod|%|@|!)"
+                    "match": "(+|\\-|\\*|\\+|mod|@|!|not|and|or|xor)"
                 }
             ]
         },
@@ -240,15 +406,15 @@
         "literal": {
             "patterns": [
                 {
-                    "name": "constant.numeric",
+                    "name": "constant.numeric.bslang",
                     "match": "(0o([0-7]+_?)+)|(0x([\\dA-Fa-f]+_?)+)|(0b([01]+_?)+)|(\\d+_?)+"
                 },
                 {
-                    "name": "constant.character",
+                    "name": "constant.character.bslang",
                     "match": "('([\\w -\\[\\]-~])')"
                 },
                 {
-                    "name": "constant.character.escape",
+                    "name": "constant.character.escape.bslang",
                     "match": "('(\\[n\\tnvfr0'])')"
                 },
                 {
@@ -256,7 +422,7 @@
                     "match": "('(\\[^n\\tnvfr0'])')"
                 },
                 {
-                    "name": "constant.language",
+                    "name": "constant.language.bslang",
                     "match": "(true|false|nothing)"
                 }
             ]
@@ -269,15 +435,7 @@
                 }
             ]
         },
-        "predefined_type": {
-            "patterns": [
-                {
-                    "name": "entity.name.type",
-                    "match": "(U32|Char|Bool|Nothing)"
-                }
-            ]
-        },
-        "type": {
+        "old_deprecated": {
             "patterns": [
                 {
                     "name": "entity.name.type",
