@@ -17,7 +17,7 @@ type THIS_SHOULD_BE_HIGHLIGHTED {
 * @author test
 */
 type T {
-// TODO is in type T {S {}} S or T a struct name?
+//TODO is in type T {S {}} S or T a struct name?
     S {
         // this comment should be allowed
         n: U32,
@@ -58,10 +58,53 @@ namespace test {
     }
 }
 
+//TODO allow unicode identifier
+/* 
+function 🎅(){
+    return 24;
+} */
 
-function get_array() ~> [Bool; 4]{
+
+function simple(a: Char){
+    //nothing here
+}
+
+export function test() ~> U32{
+    //TODO char literals syntax highlighting is broken somehow  :(
+   // return '\0';
+   // TODO the range of chars is not enough for 'ü'!!
+    return 'ü';
+}
+
+export function test2() ~> U32{
+    return 4324_32;
+}
+
+export function test3() ~> U32{
+    return get_u32('s',  987_2. test(),var);
+}
+
+
+export function get_array() ~> [Bool; 4]{
     return [false, false, true, false];
 }
+
+function complex_fn(fn_input: Function(Char, Bool) ~> [Bool]) ~> (Function(U32) ~> [Bool; 8]){
+    return get_array;
+}
+
+//TODO how do function literals look, if they even exist (likely not!)
+function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
+    return [nothing, nothing, nothing];  
+}
+
+//TODO string literals are not supported atm!
+/*
+function get_string() ~> String {
+    return "test with \" escape and \t \n \0 \\";
+}
+
+*/
 
 function main() ~> Nothing {
     let a: U32 = 4_200;
