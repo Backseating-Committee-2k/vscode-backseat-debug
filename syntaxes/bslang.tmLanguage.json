@@ -210,8 +210,8 @@
             "patterns": [
                 {
                     "name": "entity.name.type.function.with_return.bslang",
-                    "begin": "(Function)(\\()(?=[^\n]*~>)",
-                    "end": "(?<=~>[^\n]*)",
+                    "begin": "(Function)(\\()(?=[^\n]*~>).{0}",
+                    "end": "(?<=~>[^\n]*?).{0}",
                     "beginCaptures": {
                         "1": {
                             "name": "entity.name.type.function.keyword.bslang"
@@ -255,25 +255,33 @@
                                     "include": "#type"
                                 },
                                 {
-                                    "begin": "(\\()",
-                                    "end": "(\\))",
-                                    "beginCaptures": {
-                                        "1": {
-                                            "name": "meta.brace.round.return_type.begin.bslang"
-                                        }
-                                    },
-                                    "endCaptures": {
-                                        "1": {
-                                            "name": "meta.brace.round.return_type.end.bslang"
-                                        }
-                                    },
-                                    "patterns": [
-                                        {
-                                            "include": "#type"
-                                        }
-                                    ]
+                                    "include": "#bracket_type"
                                 }
                             ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "bracket_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.bracket.type.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.type.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.type.expression.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
                         }
                     ]
                 }
@@ -509,7 +517,7 @@
                 {
                     "name": "entity.name.function.return_type.bslang",
                     "begin": "(~>)",
-                    "end": "(?={).{0}",
+                    "end": "(?={|,|\\)).{0}",
                     "beginCaptures": {
                         "1": {
                             "name": "keyword.operator.return_type.bslang"
@@ -518,6 +526,9 @@
                     "patterns": [
                         {
                             "include": "#type"
+                        },
+                        {
+                            "include": "#bracket_type"
                         }
                     ]
                 }
@@ -576,7 +587,7 @@
 
                     "patterns": [
                         {
-                            "include": "#type"
+                            "include": "#function_parameter_with_default"
                         },
                         {
                             "name": "entity.function.function_parameter.with_default.bslang",
@@ -584,23 +595,37 @@
                             "end": "(?=\\)|,)",
                             "patterns": [
                                 {
-                                    "include": "#type"
-                                },
-                                {
-                                    "begin": "(=)\\s*",
-                                    "beginCaptures": {
-                                        "1": {
-                                            "name": "keyqord.operator.assignment.default_parameter.bslang"
-                                        }
-                                    },
-                                    "end": "(?=\\)|,)",
-                                    "patterns": [
-                                        {
-                                            "include": "#literal"
-                                        }
-                                    ]
+                                    "include": "#function_parameter_with_default"
                                 }
                             ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "function_parameter_with_default": {
+            "patterns": [
+                {
+                    "name": "entity.function.function_parameter.with_default.bslang",
+                    "begin": "(?<=:\\s*)",
+                    "end": "(?=\\)|,)",
+                    "patterns": [
+                        {
+                            "begin": "(=)\\s*",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "keyword.operator.assignment.default_parameter.bslang"
+                                }
+                            },
+                            "end": "(?=\\)|,)",
+                            "patterns": [
+                                {
+                                    "include": "#literal"
+                                }
+                            ]
+                        },
+                        {
+                            "include": "#type"
                         }
                     ]
                 }
@@ -705,11 +730,17 @@
                     "begin": "(\\[)",
                     "end": "(\\])",
                     "beginCaptures": {
+                        "0": {
+                            "name": "meta.block.array_literal.begin.bslang"
+                        },
                         "1": {
                             "name": "meta.brace.square.array_literal.begin.bslang"
                         }
                     },
                     "endCaptures": {
+                        "0": {
+                            "name": "meta.block.array_literal.end.bslang"
+                        },
                         "1": {
                             "name": "meta.brace.square.array_literal.end.bslang"
                         }
@@ -737,8 +768,69 @@
             ]
         },
         "struct_literal": {
-            "name": "todo",
-            "match": "{}"
+            "name": "meta.block.bslang",
+            "patterns": [
+                {
+                    "name": "entity.struct.literal.bslang",
+                    "begin": "([A-Z][a-zA-Z0-9_]*)(\\{)",
+                    "end": "(\\})",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "entity.name.type.bslang"
+                        },
+                        "2": {
+                            "name": "meta.block.struct_literal.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.block.struct_literal.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#struct_literal_member"
+                        },
+                        {
+                            "begin": "(,)",
+                            "end": ".{0}",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "punctuation.separator.comma.struct_literal.bslang"
+                                }
+                            },
+                            "patterns": [
+                                {
+                                    "include": "#struct_literal_member"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "struct_literal_member": {
+            "begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+            "name": "entity.name.struct_field.bslang",
+            "end": "(,)|(?=\\})",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.name.struct_literal.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.colon.struct.literal.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.struct_literal.member.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#literal"
+                }
+            ]
         },
         "function_body": {
             "name": "entity.function.body.bslang",
@@ -763,6 +855,40 @@
             "patterns": [
                 {
                     "include": "#inline_bssembler"
+                },
+                {
+                    "include": "#function_call_statement"
+                },
+                {
+                    "include": "#literal_statement"
+                }
+            ]
+        },
+        "function_call_statement": {
+            "begin": ".{0}",
+            "end": "(;)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.terminator.function_call.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#function_call"
+                }
+            ]
+        },
+        "literal_statement": {
+            "begin": ".{0}",
+            "end": "(;)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.terminator.literal.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#literal"
                 }
             ]
         },
@@ -856,6 +982,9 @@
                 },
                 {
                     "include": "#identifier"
+                },
+                {
+                    "include": "#unary_operator"
                 }
             ]
         },
@@ -961,11 +1090,45 @@
                 }
             ]
         },
+        "unary_operator": {
+            "patterns": [
+                {
+                    "begin": "(\\+|\\-|not)",
+                    "name": "entity.name.unary_operator.prefix.bslang",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.unary.prefix.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#function_call_arguments"
+                        }
+                    ]
+                },
+                {
+                    "begin": ".{0}",
+                    "name": "entity.name.unary_operator.postfix.bslang",
+                    "end": "(@|!)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "keyword.operator.unary.postfix.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#function_call_arguments"
+                        }
+                    ]
+                }
+            ]
+        },
         "operator": {
             "patterns": [
                 {
                     "name": "keyword.operator.bslang",
-                    "match": "(+|\\-|\\*|\\+|mod|@|!|not|and|or|xor)"
+                    "match": "(\\+|\\-|\\*|mod|and|or|xor)"
                 }
             ]
         },

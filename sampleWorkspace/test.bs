@@ -42,6 +42,7 @@ type T {
         s4: mutable S,
         r4: -> S,
         z4: Function(Char) ~> Char,
+        w4: Function(Char, U32) ~> (Function(S) ~> (Function([Bool; 8]) ~> Nothing)),
         s5: mutable -> mutable Function([U32; 1]),
         s6: [[[Bool; 9]; 9]],
     },
@@ -195,3 +196,13 @@ namespace std {
 
 
 }
+
+// TODO let basic
+/*
+statements
+expressions: 
+array literals
+struct literal
+default parameters
+function type with real () and (~> (~>)) etc. 
+*/
