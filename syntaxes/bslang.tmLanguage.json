@@ -769,12 +769,23 @@
         "inline_bssembler": {
             "begin": "(bsm)\\s+({)",
             "end": "(})",
-            "TODO": "give captures names!",
-            "contentName": "meta.embedded.block.bssembler",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.bsm.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.bsm.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.bsm.bslang"
+                }
+            },
+            "contentName": "meta.embedded.bssembler",
             "patterns": [
                 {
-                    "name": "meta.embedded.block.bssembler",
-                    "match": ".*"
+                    "include": "source.bssembler"
                 }
             ]
         },

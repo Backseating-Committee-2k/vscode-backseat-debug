@@ -86,6 +86,9 @@ export function test3() ~> U32{
 
 
 export function get_array() ~> [Bool; 4]{
+    bsm {
+            checkpoint 3
+    }
     return [false, false, true, false];
 }
 

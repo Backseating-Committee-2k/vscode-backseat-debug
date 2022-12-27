@@ -88,10 +88,7 @@
             {
                 "language": "bslang",
                 "scopeName": "source.bslang",
-                "path": "./syntaxes/bslang.tmLanguage.json",
-                "embeddedLanguages": {
-                    "meta.embedded.block.bssembler": "bssembler"
-                }
+                "path": "./syntaxes/bslang.tmLanguage.json"
             }
         ],
         "menus": {
