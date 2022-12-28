@@ -21,10 +21,9 @@ type THIS_SHOULD_BE_HIGHLIGHTED {
 general TODO list:
 * make "struct_member" also end without "," but only in the last struct member!
 * brackets dont work as intended in nested function return types, since the return type works without them.
-* support namespaces in function calls
-* fix char literals highlighting
 * implement more operator highlighting
-* add "=" as end delimiter to function type with return, so that assigments with function type are supported!
+* check if all usage of top level name "entity.name" is correct
+* ...
 * -----------------------------------------------------------
 Questions regarding syntax
 * can you put export before "type"?
@@ -121,6 +120,8 @@ export function get_array() ~> [Bool; 4]{
         checkpoint 3
     }
     return [false, false, true, false];
+    //TODO check if the return is highlighted here!
+   // if n > 1 { return 1; }
 }
 
 //TODO fix the difference between types and return types with ~>!
@@ -130,7 +131,7 @@ export function get_array() ~> [Bool; 4]{
 
 //TODO how do function literals look, if they even exist (likely not!)
 function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
-    return [nothing, nothing, nothing];  
+    return [nothing, nothing, nothing];
 }
 
 //TODO string literals are not supported atm!
@@ -168,11 +169,37 @@ function main() ~> Nothing {
     let num_functions = value_size(functions) / value_size(functions[0]);
     let func_with_return : Function(U32) ~> Nothing;
 
+    loop {
+        break;
+        continue;
+    }
+
     for ;; {
         break;
         continue;
         let i: U32 = 0;
     }
+    
+    for let i: mutable U32 = n; i < 20; i = i + 1 {
+        let n_plus_k: U32 = n + k;
+        n = k;
+        k = n_plus_k;
+    }
+
+    for (let i: U32 = variable; cond; cond = false) {
+        variable;
+        std::assert_equals(variable, 42);
+        i;
+        std::assert_equals(i, 42);
+        let variable: U32 = 0;
+        std::assert_equals(variable, 0);
+        std::assert_equals(i, 42);
+    }
+
+    function s(){
+        return true;
+    }
+
 
     if n > 4 {
         bsm {
@@ -184,14 +211,26 @@ function main() ~> Nothing {
         }
     }
 
-    if n > 4 {
-        bsm {
-            checkpoint 1
+    if a >= b {
+    }
+    else if a < b {
+        std::assert(false);
+    }
+    else {
+        std::assert(false);
+    }
+
+    let n: mutable U32 = 1;
+    let k: mutable U32 = 0;
+    loop {
+        if n > 100 {
+            break;
         }
-    } else {
-        bsm {
-            checkpoint 3
-        }
+        let n_plus_k: U32 = n + k;
+        k = n;
+        n = n_plus_k;
+        continue;
+        n = 10000;
     }
 
 }
