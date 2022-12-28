@@ -8,8 +8,33 @@ a block comment
 // empty block, this should work too!!
 /**/
 type THIS_SHOULD_BE_HIGHLIGHTED {
-    J {}
+      //TODO are the trailing this "," optional or not?
+    K {a: Char },
+    J {
+        a: Bool,
+        b: Char
+    },
 }
+
+//TODO
+/*
+general TODO list:
+* make "struct_member" also end without "," but only in the last struct member!
+* brackets dont work as intended in nested function return types, since the return type works without them.
+* support namespaces in function calls
+* fix char literals highlighting
+* implement more operator highlighting
+* add "=" as end delimiter to function type with return, so that assigments with function type are supported!
+* -----------------------------------------------------------
+Questions regarding syntax
+* can you put export before "type"?
+* is in "type T {S {}}"" S or T a struct name and which of the ones is the type?
+* How are nested function return types like "Function() ~> Function() ~> Char" treated, if they're even allowed?
+* * "Function() ~> (Function() ~> Char)" right associative (haskell like)
+* * "(Function() ~> Function()) ~> Char" left associative
+* * to solve these there have to be () allowed, are they?
+* ...
+*/
 
 /**
 * this is a documentation comment
@@ -24,14 +49,14 @@ type T {
         /*
         This comment too
         */
-        b: Bool,
+        b: Bool
     },
     U {
         /** And specially these too
         * @description a struct field description
         */
         s1: S,
-        s2: S,
+        s2: S
     },
     A {
         s1: [Bool;5],
@@ -44,8 +69,9 @@ type T {
         z4: Function(Char) ~> Char,
         w4: Function(Char, U32) ~> (Function(S) ~> (Function([Bool; 8]) ~> Nothing)),
         s5: mutable -> mutable Function([U32; 1]),
-        s6: [[[Bool; 9]; 9]],
+        s6: [[[Bool; 9]; 9]]
     },
+    //TODO is this last "," optional or not?
     Empty {},
 }
 
@@ -65,15 +91,20 @@ function 🎅(){
     return 24;
 } */
 
-
 function simple(a: Char){
     //nothing here
+    return nothing;
+}
+
+function nested_return_type(a: Char) ~> Function(S, K) ~> Function(S, U32) ~> T {
+    //nothing here
+    return S{n: 2, b: false};
 }
 
 export function test() ~> U32{
     //TODO char literals syntax highlighting is broken somehow  :(
-   // return '\0';
-   // TODO the range of chars is not enough for 'ü'!!
+    // return '\0';
+    //TODO the range of chars is not enough for 'ü'!!
     return 'ü';
 }
 
@@ -82,20 +113,21 @@ export function test2() ~> U32{
 }
 
 export function test3() ~> U32{
-    return get_u32('s',  987_2. test(),var);
+    return get_u32('s', 987_254, test(), var);
 }
 
 
 export function get_array() ~> [Bool; 4]{
     bsm {
-            checkpoint 3
+        checkpoint 3
     }
     return [false, false, true, false];
 }
 
-function complex_fn(fn_input: Function(Char, Bool) ~> [Bool]) ~> (Function(U32) ~> [Bool; 8]){
+//TODO fix the difference between types and return types with ~>!
+/* function complex_fn(fn_input: Function(Char, Bool) ~> [Bool]) ~> (Function(U32) ~> [Bool; 8]){
     return get_array;
-}
+} */
 
 //TODO how do function literals look, if they even exist (likely not!)
 function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
@@ -111,32 +143,39 @@ function get_string() ~> String {
 */
 
 function main() ~> Nothing {
+    let p: U32;
+    p = 0xCAFFE;
+    p = 0o767313;
+    p = 0b10100010;
     let a: U32 = 4_200;
     let b: Bool = false;
-    let c : Bool = true;
-    std::assert(not b);
+    let c: Bool = true;
+    call(not b);
+    //std::assert(not b);
     let d: Char = 'a';
+    d = 'a';
     '\n';
     ' ';
     '\\';
-    '\'';
+    '\';
     '~';
     '"';
-    let ptr: mutable Function(U32) ~> Bool = f;
+    //TODO add = as end delimiter to function type with return!
+   // let ptr: mutable Function(U32) ~> Bool = f;
     let ptr2: mutable -> mutable U32 = a@;
     //TODO: is there a nullptr or similar keyword?
     let long_ptr: -> -> -> -> U32 = 0;
     let functions = [f, g, f, f, f, g];
     let num_functions = value_size(functions) / value_size(functions[0]);
-    let func_with_return : Function(U32) ~> Nothing;
+   // let func_with_return : Function(U32) ~> Nothing;
 
-     for ;; {
+    for ;; {
         break;
         continue;
         let i: U32 = 0;
     }
 
-     if n > 4 {
+    if n > 4 {
         bsm {
             checkpoint 1
         }
@@ -146,7 +185,7 @@ function main() ~> Nothing {
         }
     }
 
-     if n > 4 {
+    if n > 4 {
         bsm {
             checkpoint 1
         }
@@ -171,7 +210,7 @@ export function assert(condition: Bool) {
 
 //TODO: is this valid syntax (the default value for the parameter?)
 function def(hello: Char = '\n') ~> Char {
-    //TODO: is this syntax valid?
+    //TODO: is this syntax valid? (if yes, i need to implement it!)
     let u, i,o : Char;
 
 }
@@ -196,13 +235,3 @@ namespace std {
 
 
 }
-
-// TODO let basic
-/*
-statements
-expressions: 
-array literals
-struct literal
-default parameters
-function type with real () and (~> (~>)) etc. 
-*/
