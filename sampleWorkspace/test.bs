@@ -167,7 +167,7 @@ function main() ~> Nothing {
     let long_ptr: -> -> -> -> U32 = 0;
     let functions = [f, g, f, f, f, g];
     let num_functions = value_size(functions) / value_size(functions[0]);
-   // let func_with_return : Function(U32) ~> Nothing;
+    // let func_with_return : Function(U32) ~> Nothing;
 
     for ;; {
         break;

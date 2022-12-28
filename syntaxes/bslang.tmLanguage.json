@@ -699,8 +699,35 @@
         "char_literal": {
             "patterns": [
                 {
-                    "name": "constant.character.bslang",
-                    "match": "(')([^\\'])(')",
+                    "name": "entity.literal.char.empty.invalid.bslang",
+                    "match": "('')",
+                    "captures": {
+                        "1": {
+                            "name": "invalid.illegal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.invalid.bslang",
+                    "match": "(')([\\\\'])(')",
+                    "captures": {
+                        "0": {
+                            "name": "entity.literal.char.invalid.bslang"
+                        },
+                        "1": {
+                            "name": "punctuation.char_literal.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.bslang"
+                        },
+                        "3": {
+                            "name": "punctuation.char_literal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.bslang",
+                    "match": "(')([^\\\\'])(')",
                     "captures": {
                         "0": {
                             "name": "entity.literal.char.bslang"
@@ -717,9 +744,12 @@
                     }
                 },
                 {
-                    "name": "constant.character.escape.bslang",
-                    "match": "(')(\\[n\\tnvfr0'])(')",
+                    "name": "entity.literal.char.escaped.bslang",
+                    "match": "(')(\\\\[n\\\\tnvfr0'])(')",
                     "captures": {
+                        "0": {
+                            "name": "entity.literal.char.escaped.bslang"
+                        },
                         "1": {
                             "name": "punctuation.char_literal.bslang"
                         },
@@ -732,29 +762,17 @@
                     }
                 },
                 {
-                    "name": "invalid.illegal",
-                    "match": "(')(\\[^n\\tnvfr0'])(')",
+                    "name": "entity.literal.char.escaped.invalid.bslang",
+                    "match": "(')(\\\\[^n\\\\tnvfr0'])(')",
                     "captures": {
+                        "0": {
+                            "name": "entity.literal.char.escaped.invalid.bslang"
+                        },
                         "1": {
                             "name": "punctuation.char_literal.bslang"
                         },
                         "2": {
-                            "name": "invalid.illegal"
-                        },
-                        "3": {
-                            "name": "punctuation.char_literal.bslang"
-                        }
-                    }
-                },
-                {
-                    "name": "invalid.illegal",
-                    "match": "(')(\\[^\\']{2,})(')",
-                    "captures": {
-                        "1": {
-                            "name": "punctuation.char_literal.bslang"
-                        },
-                        "2": {
-                            "name": "invalid.illegal"
+                            "name": "invalid.illegal.bslang"
                         },
                         "3": {
                             "name": "punctuation.char_literal.bslang"
