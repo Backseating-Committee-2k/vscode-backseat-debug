@@ -40,8 +40,16 @@
             },
             "patterns": [
                 {
-                    "name": "entity.name.tag.import.bslang",
-                    "match": "([a-z][a-zA-Z0-9_\\.]*)"
+                    "name": "entity.import.bslang",
+                    "match": "([a-z][a-zA-Z0-9_]*)(?:(\\.)|(?=\\s*;))",
+                    "captures": {
+                        "1": {
+                            "name": "string.quoted.other.import.bslang"
+                        },
+                        "2": {
+                            "name": "keyword.operator.inport.seperator.bslang"
+                        }
+                    }
                 }
             ]
         },
@@ -212,7 +220,7 @@
                 {
                     "name": "entity.name.type.function.with_return.bslang",
                     "begin": "(Function)(\\()(?=[^\n]*\\)\\s*~>).{0}",
-                    "end": "(?<=~>\\s*[^\n]*).{0}(?=(.?\\s*$)|(?:\\s*{)|(\\)(?!\\s*~>)))",
+                    "end": "(?<=~>\\s*[^\n]*).{0}(?=(.?\\s*$)|(?:\\s*(?:{|;|=))|(\\)(?!\\s*~>)))",
                     "beginCaptures": {
                         "1": {
                             "name": "entity.name.type.function.keyword.bslang"
@@ -782,8 +790,16 @@
             ]
         },
         "builtin_literal": {
-            "name": "constant.language.bslang",
-            "match": "(true|false|nothing)"
+            "patterns": [
+                {
+                    "name": "constant.language.boolean.bslang",
+                    "match": "(true|false)"
+                },
+                {
+                    "name": "constant.language.nothing.bslang",
+                    "match": "(nothing)"
+                }
+            ]
         },
         "array_literal": {
             "name": "meta.block.bslang",
@@ -1008,9 +1024,9 @@
             ]
         },
         "variable_declaration_initialization": {
-            "begin": "^\\s*(let)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)",
+            "begin": "^\\s*(let)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)(?=.*=)",
             "name": "entity.variable.declaration.initialization.bslang",
-            "end": "(;)",
+            "end": "(?<==.*)(;)",
             "beginCaptures": {
                 "1": {
                     "name": "storage.type.let.bslang"
@@ -1208,6 +1224,25 @@
         "function_call": {
             "patterns": [
                 {
+                    "name": "entity.namespace.usage.bslang",
+                    "match": "([a-z][a-zA-Z0-9_]*)(::)",
+                    "captures": {
+                        "1": {
+                            "name": "entity.name.namespace.usage.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.separator.namespace.access.bslang"
+                        }
+                    }
+                },
+                {
+                    "include": "#function_call_end"
+                }
+            ]
+        },
+        "function_call_end": {
+            "patterns": [
+                {
                     "name": "entity.function.call.bslang",
                     "begin": "([a-z][a-zA-Z0-9_]*)(\\()",
                     "end": "(\\))",
@@ -1266,7 +1301,7 @@
                             "name": "keyword.control.namespace.bslang"
                         },
                         "2": {
-                            "name": "entity.name.tag.namespace.bslang"
+                            "name": "entity.name.namespace.declaration.bslang"
                         },
                         "3": {
                             "name": "punctuation.definition.namespace.bslang"

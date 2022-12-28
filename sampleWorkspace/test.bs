@@ -1,4 +1,4 @@
-import std;
+import std.console;
 // a comment here :) 
 
 /*
@@ -102,8 +102,7 @@ function nested_return_type(a: Char) ~> Function(S, K) ~> Function(S, U32) ~> T 
 }
 
 export function test() ~> U32{
-    //TODO char literals syntax highlighting is broken somehow  :(
-    // return '\0';
+    return '\0';
     //TODO the range of chars is not enough for 'ü'!!
     return 'ü';
 }
@@ -151,7 +150,7 @@ function main() ~> Nothing {
     let b: Bool = false;
     let c: Bool = true;
     call(not b);
-    //std::assert(not b);
+    std::assert(not b);
     let d: Char = 'a';
     d = 'a';
     '\n';
@@ -161,13 +160,13 @@ function main() ~> Nothing {
     '~';
     '"';
     //TODO add = as end delimiter to function type with return!
-   // let ptr: mutable Function(U32) ~> Bool = f;
+    let ptr: mutable Function(U32) ~> Bool = f;
     let ptr2: mutable -> mutable U32 = a@;
     //TODO: is there a nullptr or similar keyword?
     let long_ptr: -> -> -> -> U32 = 0;
     let functions = [f, g, f, f, f, g];
     let num_functions = value_size(functions) / value_size(functions[0]);
-    // let func_with_return : Function(U32) ~> Nothing;
+    let func_with_return : Function(U32) ~> Nothing;
 
     for ;; {
         break;
