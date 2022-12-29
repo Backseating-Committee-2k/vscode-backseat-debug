@@ -24,6 +24,7 @@ general TODO list:
 * implement more operator highlighting
 * check if all usage of top level name "entity.name" is correct
 * allow block scopes like { } in blocks
+* implement binary and tertiary operator correctly, not as single highlight token!
 * ...
 * -----------------------------------------------------------
 Questions regarding syntax
@@ -181,17 +182,32 @@ function main() ~> Nothing {
         continue;
     }
 
+    let i = 's' > 2;
+    let j = ('s' > 'a') > 2;
+    let z: U32 = 1 + 1;
+    let z1: U32 = -1;
+    let z2: U32 = + (-1);
+    let z3: Bool = f(1) > g([1,3,4]); 
+    let z4: U32 = 0b100100 or 0b10001; 
+    let z5: U32 = + (o > 1) ? 1 : 0;
+    let z6: U32 = 982 * 0xFF; 
+    let z7: U32 = 982 mod 0xFF; 
+    let z8: U32 = 982 << 0xFF; 
+    let z9: U32 = 982 / 0xFF; 
+
+    for let i: mutable U32 = n; i < 20; i = i + 1 {
+        let n_plus_k: U32 = n + k;
+        n = k;
+        k = n_plus_k;
+    }
+
     for ;; {
         break;
         continue;
         let i: U32 = 0;
     }
     
-    for let i: mutable U32 = n; i < 20; i = i + 1 {
-        let n_plus_k: U32 = n + k;
-        n = k;
-        k = n_plus_k;
-    }
+  
 
     for (let i: U32 = variable; cond; cond = false) {
         variable;

@@ -213,8 +213,8 @@
         },
         "function_type_with_return": {
             "name": "entity.name.type.function.with_return.bslang",
-            "begin": "(Function)(\\()(?=[^\n]*\\)\\s*~>).{0}",
-            "end": "(?<=~>\\s*[^\n]*).{0}(?=(.?\\s*$)|(?:\\s*(?:{|;|=))|(\\)(?!\\s*~>)))",
+            "begin": "(Function)(\\()(?=[^\\n]*\\)\\s*~>).{0}",
+            "end": "(?<=~>\\s*[^\\n]*).{0}(?=(.?\\s*$)|(?:\\s*(?:{|;|=))|(\\)(?!\\s*~>)))",
             "beginCaptures": {
                 "1": {
                     "name": "entity.name.type.function.keyword.bslang"
@@ -266,7 +266,7 @@
         },
         "bracket_type": {
             "name": "entity.bracket.type.expression.bslang",
-            "begin": "(\\()",
+            "begin": "\\s*(\\()",
             "end": "(\\))",
             "beginCaptures": {
                 "1": {
@@ -479,7 +479,7 @@
         },
         "function_definition_with_return_type": {
             "name": "entity.function.definition.with_return_type.bslang",
-            "begin": "(?<=[a-zA-Z0-9_]\\s*?).{0}(?=[^\n]*~>)",
+            "begin": "(?<=[a-zA-Z0-9_]\\s*?).{0}(?=[^\\n]*~>)",
             "end": "(?={).{0}",
             "patterns": [
                 {
@@ -1226,16 +1226,40 @@
         "rvalue": {
             "patterns": [
                 {
-                    "include": "#literal"
-                },
-                {
                     "include": "#function_call"
                 },
                 {
                     "include": "#operator"
                 },
                 {
+                    "include": "#literal"
+                },
+                {
                     "include": "#identifier"
+                },
+
+                {
+                    "include": "#bracket_rvalue"
+                }
+            ]
+        },
+        "bracket_rvalue": {
+            "name": "entity.bracket.type.expression.bslang",
+            "begin": "\\s*(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.round.rvalue.expression.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.round.rvalue.expression.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
                 }
             ]
         },
@@ -1376,7 +1400,7 @@
             "patterns": [
                 {
                     "begin": "(?<=for[ \\(])",
-                    "end": "(;)",
+                    "end": "(;)|(?<=for[ \\(].*let.*)",
                     "name": "entity.for.loop.declaration.bslang",
                     "endCaptures": {
                         "1": {
@@ -1391,7 +1415,7 @@
                 },
                 {
                     "begin": "(?<=;.*?)",
-                    "end": "(;)(?=[^;]*{)",
+                    "end": "(;)",
                     "name": "entity.for.loop.condition.bslang",
                     "endCaptures": {
                         "1": {
@@ -1606,7 +1630,7 @@
             ]
         },
         "unary_postfix_operator": {
-            "begin": "(?=[^\n]*?(?:@|!)).{0}",
+            "begin": "(?=[^\\n]*?(?:@|!)).{0}",
             "name": "entity.operator.unary_operator.postfix.bslang",
             "end": "(@|!)",
             "endCaptures": {
@@ -1652,67 +1676,16 @@
             ]
         },
         "binary_operator_numeric": {
-            "patterns": [
-                {
-                    "begin": "(\\+|\\-|\\*|mod)",
-                    "name": "entity.operator.binary_operator.numeric.bslang",
-                    "end": ".{0}",
-                    "beginCaptures": {
-                        "1": {
-                            "name": "keyword.operator.binary.numeric.bslang"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "include": "#rvalue"
-                        }
-                    ]
-                }
-            ]
+            "match": "(\\+|\\-|\\*|mod|/)",
+            "name": "keyword.operator.binary.numeric.bslang"
         },
         "binary_operator_bitwise": {
-            "patterns": [
-                {
-                    "begin": "(and|or|xor)",
-                    "name": "entity.operator.binary_operator.bitwise.bslang",
-                    "end": ".{0}",
-                    "beginCaptures": {
-                        "1": {
-                            "name": "keyword.operator.binary.bitwise.bslang"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "include": "#rvalue"
-                        }
-                    ]
-                }
-            ]
+            "match": "(and|or|xor|<<|>>)",
+            "name": "keyword.operator.binary.numeric.bslang"
         },
         "binary_operator_compare": {
-            "begin": "(?=.*(>|>=|!=|==|<|<=))",
-            "name": "entity.operator.binary_operator.compare.bslang",
-            "end": "(?=>|>=|!=|==|<|<=)",
-            "patterns": [
-                {
-                    "include": "#rvalue"
-                },
-                {
-                    "begin": "(>|>=|!=|==|<|<=)",
-                    "name": "entity.operator.binary_operator.compare.bslang",
-                    "end": "(?<=>|>=|!=|==|<|<=)(?<=.*)",
-                    "beginCaptures": {
-                        "1": {
-                            "name": "keyword.operator.binary.compare.bslang"
-                        }
-                    },
-                    "patterns": [
-                        {
-                            "include": "#rvalue"
-                        }
-                    ]
-                }
-            ]
+            "match": "(>|>=|!=|==|<|<=)",
+            "name": "keyword.operator.binary.compare.bslang"
         },
 
         "tertiary_operator": {
@@ -1723,17 +1696,15 @@
             ]
         },
         "elvis_operator": {
-            "begin": ".*(\\?).*(:).*",
-            "name": "entity.operator.tertiary_operator.bslang",
-            "end": ".{0}",
-            "beginCaptures": {
-                "1": {
-                    "name": "keyword.operator.tertiary.bslang"
-                }
-            },
+            "name": "entity.operator.tertiary_operator.elvis.bslang",
             "patterns": [
                 {
-                    "include": "#rvalue"
+                    "match": "(\\?)",
+                    "name": "keyword.operator.tertiary.elvis.start.bslang"
+                },
+                {
+                    "match": "(:)",
+                    "name": "keyword.operator.tertiary.elvis.end.bslang"
                 }
             ]
         },
