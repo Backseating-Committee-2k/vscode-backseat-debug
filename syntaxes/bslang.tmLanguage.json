@@ -8,16 +8,16 @@
     "regex-docs": "https://macromates.com/manual/en/regular_expressions",
     "patterns": [
         {
-            "include": "#import"
+            "include": "#comment"
+        },
+        {
+            "include": "#function"
         },
         {
             "include": "#struct"
         },
         {
-            "include": "#comment"
-        },
-        {
-            "include": "#function"
+            "include": "#import"
         },
         {
             "include": "#namespace"
@@ -55,7 +55,7 @@
         },
         "struct": {
             "begin": "(type)\\s+([A-Z][a-zA-Z0-9_]*)\\s*({)",
-            "end": "(})",
+            "end": "\\s*(})",
             "name": "entity.struct.bslang",
             "beginCaptures": {
                 "1": {
@@ -363,17 +363,20 @@
             "patterns": [
                 {
                     "name": "comment.line.double-slash.bslang",
-                    "match": "^\\s*//.*"
+                    "match": "\\s*//.*"
                 },
                 {
                     "name": "comment.block.block.empty.bslang",
-                    "match": "/\\**/"
+                    "match": "\\s*/\\**/"
                 },
                 {
                     "name": "comment.block.documentation.bslang",
-                    "begin": "/\\*{2}",
+                    "begin": "\\s*/\\*{2}",
                     "end": "\\*/",
                     "patterns": [
+                        {
+                            "include": "#empty_line"
+                        },
                         {
                             "match": ".+?(?=\\*/)"
                         },
@@ -384,11 +387,14 @@
                 },
                 {
                     "name": "comment.block.bslang",
-                    "begin": "/\\*",
+                    "begin": "\\s*/\\*",
                     "end": "\\*/",
                     "patterns": [
                         {
-                            "match": ".+?(?=\\*/)"
+                            "include": "#empty_line"
+                        },
+                        {
+                            "match": ".*?(?=\\*/)"
                         }
                     ]
                 },
@@ -431,7 +437,7 @@
         },
         "function": {
             "name": "entity.function.bslang",
-            "begin": "^\\s*?((export)?\\s+)?(function)\\s+([a-z][a-zA-Z0-9_]*)\\s*?(?=\\()",
+            "begin": "\\s*?((export)?\\s+)?(function)\\s+([a-z][a-zA-Z0-9_]*)\\s*?(?=\\()",
             "end": "(})",
             "beginCaptures": {
                 "1": {
@@ -870,7 +876,7 @@
         "function_body": {
             "name": "entity.function.body.bslang",
             "begin": "({)",
-            "end": "(?=})",
+            "end": "(?=\\s*})",
             "beginCaptures": {
                 "1": {
                     "name": "punctuation.defintion.block.begin.function.bslang"
@@ -888,6 +894,9 @@
                     "include": "#comment"
                 },
                 {
+                    "include": "#bracket_block_content"
+                },
+                {
                     "include": "#controll_flow"
                 },
                 {
@@ -898,6 +907,26 @@
                 },
                 {
                     "include": "#statement"
+                }
+            ]
+        },
+        "bracket_block_content": {
+            "name": "entity.bracket.type.block.bslang",
+            "begin": "\\s*({)",
+            "end": "\\s*(})",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.curly.type.block.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.curly.type.block.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#block_content"
                 }
             ]
         },
@@ -943,8 +972,8 @@
             ]
         },
         "inline_bssembler": {
-            "begin": "^\\s*(bsm)\\s+({)",
-            "end": "(})",
+            "begin": "\\s*(bsm)\\s+({)",
+            "end": "\\s*(})",
             "beginCaptures": {
                 "1": {
                     "name": "keyword.control.bsm.bslang"
@@ -989,7 +1018,7 @@
             ]
         },
         "variable_declaration_initialization": {
-            "begin": "^\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)(?=.*=)",
+            "begin": "\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)(?=.*=)",
             "name": "entity.variable.declaration.initialization.bslang",
             "end": "(?<==.*)(;)",
             "beginCaptures": {
@@ -1046,7 +1075,7 @@
             ]
         },
         "variable_declaration_initialization_without_type": {
-            "begin": "^\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)",
+            "begin": "\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)",
             "name": "entity.variable.declaration.initialization.without_type.bslang",
             "end": "(;)",
             "beginCaptures": {
@@ -1081,7 +1110,7 @@
             ]
         },
         "variable_declaration": {
-            "begin": "^\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)",
+            "begin": "\\s*(let)\\s+(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)",
             "name": "entity.variable.declaration.bslang",
             "end": "(;)",
             "beginCaptures": {
@@ -1110,7 +1139,7 @@
             ]
         },
         "variable_assignment": {
-            "begin": "^\\s*(?!let\\s*)(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
+            "begin": "\\s*(?!let\\s*)(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
             "name": "entity.variable.assignment.bslang",
             "end": "(;)",
             "beginCaptures": {
@@ -1162,7 +1191,7 @@
             "patterns": [
                 {
                     "name": "entity.return.nothing.bslang",
-                    "match": "(?:(?:^\\s*)|(?<=\b))(return)\\s*(;)",
+                    "match": "(?:(?:\\s*)|(?<=\b))(return)\\s*(;)",
                     "captures": {
                         "1": {
                             "name": "keyword.control.return.bslang"
@@ -1174,7 +1203,7 @@
                 },
                 {
                     "name": "entity.return.value.bslang",
-                    "begin": "(?:(?:^\\s*)|(?<=\b))(return)\\s+",
+                    "begin": "(?:(?:\\s*)|(?<=\b))(return)\\s+",
                     "end": "(;)",
                     "beginCaptures": {
                         "1": {
@@ -1268,8 +1297,8 @@
             "match": "\\b(?!loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)([a-z][a-zA-Z0-9_]*)\\b"
         },
         "loop": {
-            "begin": "^\\s*(loop)\\s*({)",
-            "end": "(})",
+            "begin": "\\s*(loop)\\s*({)",
+            "end": "\\s*(})",
             "name": "entity.loop.raw.bslang",
             "beginCaptures": {
                 "1": {
@@ -1291,7 +1320,7 @@
             ]
         },
         "for_loop": {
-            "begin": "^\\s*(for)(?=(?: |\\())",
+            "begin": "\\s*(for)(?=(?: |\\())",
             "end": "(?<=})",
             "name": "entity.for.loop.bslang",
             "beginCaptures": {
@@ -1301,17 +1330,22 @@
             },
             "patterns": [
                 {
-                    "include": "#for_loop_condition"
+                    "include": "#for_loop_start"
                 },
                 {
                     "include": "#loop_body"
                 }
             ]
         },
-        "for_loop_condition": {
+        "for_loop_start": {
             "begin": "(?<=for(?: |\\())",
-            "end": "(?<=[ \\)]).{0}(?={)",
-            "name": "entity.for.loop.bslang",
+            "end": "(?<=[ \\)])({)",
+            "name": "entity.for.loop.start.bslang",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.loop.begin.bslang"
+                }
+            },
             "patterns": [
                 {
                     "include": "#for_loop_definition"
@@ -1356,9 +1390,9 @@
                     ]
                 },
                 {
-                    "begin": "(?<=;)",
-                    "end": "(;)",
-                    "name": "entity.for.loop.declaration.bslang",
+                    "begin": "(?<=;.*?)",
+                    "end": "(;)(?=[^;]*{)",
+                    "name": "entity.for.loop.condition.bslang",
                     "endCaptures": {
                         "1": {
                             "name": "punctuation.separator.comma.for.loop.condition.end.bslan"
@@ -1371,8 +1405,8 @@
                     ]
                 },
                 {
-                    "begin": "(?<=;)",
-                    "end": "(?<=[ \\)]).{0}(?={)",
+                    "begin": "(?<=;.*?)",
+                    "end": "(?=[ \\)]{)",
                     "name": "entity.for.loop.increment.bslang",
 
                     "patterns": [
@@ -1401,7 +1435,7 @@
             "patterns": [
                 {
                     "name": "entity.loop.continue.bslang",
-                    "match": "(continue)(;)",
+                    "match": "\\s*(continue)(;)",
                     "captures": {
                         "1": {
                             "name": "keyword.control.loop.continue.bslang"
@@ -1413,7 +1447,7 @@
                 },
                 {
                     "name": "entity.loop.break.bslang",
-                    "match": "(break)(;)",
+                    "match": "\\s*(break)(;)",
                     "captures": {
                         "1": {
                             "name": "keyword.control.loop.break.bslang"
@@ -1426,14 +1460,9 @@
             ]
         },
         "loop_body": {
-            "begin": "({)",
-            "end": "(})",
+            "begin": "(?<=[ \\)])(?={)",
+            "end": "\\s*(})",
             "name": "entity.loop.bslang",
-            "beginCaptures": {
-                "1": {
-                    "name": "punctuation.definition.loop.begin.bslang"
-                }
-            },
             "endCaptures": {
                 "1": {
                     "name": "punctuation.definition.loop.end.bslang"
@@ -1449,10 +1478,10 @@
         "loop_body_content": {
             "patterns": [
                 {
-                    "include": "#block_content"
+                    "include": "#loop_keyword"
                 },
                 {
-                    "include": "#loop_keyword"
+                    "include": "#block_content"
                 }
             ]
         },
@@ -1470,7 +1499,7 @@
         },
         "namespace": {
             "begin": "(namespace)\\s+([a-z][a-zA-Z0-9_]*)\\s*({)",
-            "end": "(})",
+            "end": "\\s*(})",
             "name": "entity.namespace.bslang",
             "beginCaptures": {
                 "1": {
@@ -1661,29 +1690,25 @@
             ]
         },
         "binary_operator_compare": {
+            "begin": "(?=.*(>|>=|!=|==|<|<=))",
+            "name": "entity.operator.binary_operator.compare.bslang",
+            "end": "(?=>|>=|!=|==|<|<=)",
             "patterns": [
                 {
-                    "begin": "(?=.*(>|>=|!=|==|<|<=))",
+                    "include": "#rvalue"
+                },
+                {
+                    "begin": "(>|>=|!=|==|<|<=)",
                     "name": "entity.operator.binary_operator.compare.bslang",
-                    "end": "(?=>|>=|!=|==|<|<=)",
+                    "end": "(?<=>|>=|!=|==|<|<=)(?<=.*)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.binary.compare.bslang"
+                        }
+                    },
                     "patterns": [
                         {
                             "include": "#rvalue"
-                        },
-                        {
-                            "begin": "(>|>=|!=|==|<|<=)",
-                            "name": "entity.operator.binary_operator.compare.bslang",
-                            "end": "(?<=>|>=|!=|==|<|<=)(?<=.*)",
-                            "beginCaptures": {
-                                "1": {
-                                    "name": "keyword.operator.binary.compare.bslang"
-                                }
-                            },
-                            "patterns": [
-                                {
-                                    "include": "#rvalue"
-                                }
-                            ]
                         }
                     ]
                 }

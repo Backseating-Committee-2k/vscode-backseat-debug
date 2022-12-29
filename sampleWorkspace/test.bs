@@ -23,6 +23,7 @@ general TODO list:
 * brackets dont work as intended in nested function return types, since the return type works without them.
 * implement more operator highlighting
 * check if all usage of top level name "entity.name" is correct
+* allow block scopes like { } in blocks
 * ...
 * -----------------------------------------------------------
 Questions regarding syntax
@@ -131,6 +132,7 @@ export function get_array() ~> [Bool; 4]{
 
 //TODO how do function literals look, if they even exist (likely not!)
 function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
+    {return a;}
     return [nothing, nothing, nothing];
 }
 
@@ -144,10 +146,10 @@ function get_string() ~> String {
 
 function main() ~> Nothing {
     let p: U32;
-    p = 0xCAFFE;
+    p = 0xCAFFE;  //comment after something
     p = 0o767313;
     p = 0b10100010;
-    let a: U32 = 4_200;
+    let a = 4_200;
     let b: Bool = false;
     let c: Bool = true;
     call(not b);
@@ -170,7 +172,12 @@ function main() ~> Nothing {
     let func_with_return : Function(U32) ~> Nothing;
 
     loop {
+        // test comment inside here
+        function s(){
+            return nothing;
+        }
         break;
+        let z = [8];
         continue;
     }
 
