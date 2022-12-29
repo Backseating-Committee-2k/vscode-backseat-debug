@@ -25,6 +25,9 @@ general TODO list:
 * check if all usage of top level name "entity.name" is correct
 * allow block scopes like { } in blocks
 * implement binary and tertiary operator correctly, not as single highlight token!
+* implement last big missing feature, while loop
+* fix issues, see down below (mainly operator issues, that will be solved, wehn rewriting operators correctly)
+* add struct access with . !
 * ...
 * -----------------------------------------------------------
 Questions regarding syntax
@@ -198,12 +201,29 @@ function main() ~> Nothing {
     let arr = [not true, not false];
 
     let l = call(1)[4];
+    let begin = functions[1]@;
+    let functions = h;
 
     for let i: mutable U32 = n; i < 20; i = i + 1 {
         let n_plus_k: U32 = n + k;
         let z : mutable U32 = [1, 3252, 32_322][2];
         n = k;
         k = n_plus_k;
+    }
+
+    while true {
+        break;
+        continue;
+    }
+
+    let n: mutable U32 = 1;
+    let k: mutable U32 = 0;
+    while n < 100 {
+        let n_plus_k: U32 = n + k;
+        k = n;
+        n = n_plus_k;
+        continue;
+        n = 10000;
     }
 
     for ;; {
@@ -222,6 +242,11 @@ function main() ~> Nothing {
         let variable: U32 = 0;
         std::assert_equals(variable, 0);
         std::assert_equals(i, 42);
+
+        if 7 > n {
+            // break should be allowed here!
+            break;
+        }
     }
 
     function s(){
@@ -233,14 +258,15 @@ function main() ~> Nothing {
         bsm {
             checkpoint 1
         }
-    } else {
+    }
+    else {
         bsm {
             checkpoint 3
         }
     }
 
     if a >= b {
-    }
+    } 
     else if a < b {
         std::assert(false);
     }
@@ -276,11 +302,10 @@ export function assert(condition: Bool) {
 
 //TODO: is this valid syntax (the default value for the parameter?)
 function def(hello: Char = '\n') ~> Char {
-    //TODO: is this syntax valid? (if yes, i need to implement it!)
-    let u, i, o : Char;
+    //TODO: is this syntax valid? (if yes, I need to implement it!)
+   // let u, i, o : Char;
 
 }
-
 
 
 namespace std {
@@ -293,10 +318,55 @@ namespace std {
             rhs! = temp;
     }
 
-
     function a() ~> Nothing {
         return nothing;
     }
+
+    function t() {     
+        let u  : Char = '@';   
+        let y: U32 = q!!;
+
+        o! = 1;
+        o[1] = 12;
+
+
+        std::assert_equals(array[2].c, 'C');
+
+        let is_not_equal = nothing != nothing;
+        
+        //TODO rewrite operators to support binary operators here:
+        std::assert(a != b);
+
+        let world = World {
+            game_objects: game_objects@,
+        };
+
+        do {
+            break;
+            continue;
+        } while false;
+
+        do {
+            break;
+            continue;
+        } while true;
+
+        let n: mutable U32 = 1000;
+        let k: mutable U32 = 0;
+        do {
+            if n > 100 {
+                n = 1;
+            }
+            let n_plus_k: U32 = n + k;
+            k = n;
+            n = n_plus_k;
+            continue;
+            n = 10000;
+        } while n < 100;
+
+        std::assert(a >= 42 != false);
+    }
+
 
 
 
