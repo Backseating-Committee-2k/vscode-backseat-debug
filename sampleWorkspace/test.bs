@@ -194,9 +194,14 @@ function main() ~> Nothing {
     let z7: U32 = 982 mod 0xFF; 
     let z8: U32 = 982 << 0xFF; 
     let z9: U32 = 982 / 0xFF; 
+    let u = not 0;
+    let arr = [not true, not false];
+
+    let l = call(1)[4];
 
     for let i: mutable U32 = n; i < 20; i = i + 1 {
         let n_plus_k: U32 = n + k;
+        let z : mutable U32 = [1, 3252, 32_322][2];
         n = k;
         k = n_plus_k;
     }
@@ -272,7 +277,7 @@ export function assert(condition: Bool) {
 //TODO: is this valid syntax (the default value for the parameter?)
 function def(hello: Char = '\n') ~> Char {
     //TODO: is this syntax valid? (if yes, i need to implement it!)
-    let u, i,o : Char;
+    let u, i, o : Char;
 
 }
 

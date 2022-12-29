@@ -795,7 +795,7 @@
             },
             "patterns": [
                 {
-                    "include": "#literal"
+                    "include": "#rvalue"
                 },
                 {
                     "begin": "(,)",
@@ -807,7 +807,7 @@
                     },
                     "patterns": [
                         {
-                            "include": "#literal"
+                            "include": "#rvalue"
                         }
                     ]
                 }
@@ -1141,7 +1141,7 @@
         "variable_assignment": {
             "begin": "\\s*(?!let\\s*)(?:(loop|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
             "name": "entity.variable.assignment.bslang",
-            "end": "(;)",
+            "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
             "beginCaptures": {
                 "1": {
                     "name": "variable.name.local_variable.bslang"
@@ -1237,7 +1237,6 @@
                 {
                     "include": "#identifier"
                 },
-
                 {
                     "include": "#bracket_rvalue"
                 }
@@ -1345,11 +1344,16 @@
         },
         "for_loop": {
             "begin": "\\s*(for)(?=(?: |\\())",
-            "end": "(?<=})",
+            "end": "\\s*(})",
             "name": "entity.for.loop.bslang",
             "beginCaptures": {
                 "1": {
                     "name": "keyword.control.for.loop.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.for.loop.end.bslang"
                 }
             },
             "patterns": [
@@ -1357,7 +1361,7 @@
                     "include": "#for_loop_start"
                 },
                 {
-                    "include": "#loop_body"
+                    "include": "#for_loop_body"
                 }
             ]
         },
@@ -1367,7 +1371,7 @@
             "name": "entity.for.loop.start.bslang",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.definition.loop.begin.bslang"
+                    "name": "punctuation.definition.for.loop.begin.bslang"
                 }
             },
             "patterns": [
@@ -1414,7 +1418,7 @@
                     ]
                 },
                 {
-                    "begin": "(?<=;.*?)",
+                    "begin": "(?<=;)(?![^;]*{)",
                     "end": "(;)",
                     "name": "entity.for.loop.condition.bslang",
                     "endCaptures": {
@@ -1429,8 +1433,8 @@
                     ]
                 },
                 {
-                    "begin": "(?<=;.*?)",
-                    "end": "(?=[ \\)]{)",
+                    "begin": "(?<=;.*)",
+                    "end": "(?<=[ \\)])(?={)",
                     "name": "entity.for.loop.increment.bslang",
 
                     "patterns": [
@@ -1483,16 +1487,10 @@
                 }
             ]
         },
-        "loop_body": {
-            "begin": "(?<=[ \\)])(?={)",
-            "end": "\\s*(})",
+        "for_loop_body": {
+            "begin": "(?<=[ \\)]{)",
+            "end": "(?=\\s*})",
             "name": "entity.loop.bslang",
-            "endCaptures": {
-                "1": {
-                    "name": "punctuation.definition.loop.end.bslang"
-                }
-            },
-
             "patterns": [
                 {
                     "include": "#loop_body_content"
@@ -1615,7 +1613,7 @@
             ]
         },
         "unary_prefix_operator_not": {
-            "begin": "(not)",
+            "begin": "(not)(?=\\s|\b)",
             "name": "entity.operator.unary_operator.prefix.not.bslang",
             "end": ".{0}",
             "beginCaptures": {
@@ -1648,7 +1646,7 @@
             ]
         },
         "array_index_operator": {
-            "begin": "(\\[)(?=(?:(?:\\d+_?)+))",
+            "begin": "(\\[)(?=(?:(?:\\d+_?)+)])",
             "name": "entity.operator.unary_operator.postfix.array_index.bslang",
             "end": "(\\])",
             "endCaptures": {
