@@ -130,9 +130,9 @@ export function get_array() ~> [Bool; 4]{
     return get_array;
 } */
 
-//TODO how do function literals look, if they even exist (likely not!)
+
 function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
-    {return a;}
+    {return a;} // this is a block with a statement in one line
     return [nothing, nothing, nothing];
 }
 
@@ -162,7 +162,7 @@ function main() ~> Nothing {
     '\';
     '~';
     '"';
-    //TODO add = as end delimiter to function type with return!
+
     let ptr: mutable Function(U32) ~> Bool = f;
     let ptr2: mutable -> mutable U32 = a@;
     //TODO: is there a nullptr or similar keyword?
@@ -188,7 +188,7 @@ function main() ~> Nothing {
     let z2: U32 = + (-1);
     let z3: Bool = f(1) > g([1,3,4]); 
     let z4: U32 = 0b100100 or 0b10001; 
-    let z5: U32 = + (o > 1) ? 1 : 0;
+    let z5: U32 = (o > 1) ? 1 : 0;
     let z6: U32 = 982 * 0xFF; 
     let z7: U32 = 982 mod 0xFF; 
     let z8: U32 = 982 << 0xFF; 
@@ -240,7 +240,7 @@ function main() ~> Nothing {
         std::assert_equals(i, 42);
 
         if 7 > n {
-            // break should be allowed here!
+            // break should be allowed here
             break;
         }
     }
