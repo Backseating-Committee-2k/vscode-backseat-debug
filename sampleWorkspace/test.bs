@@ -21,13 +21,9 @@ type THIS_SHOULD_BE_HIGHLIGHTED {
 general TODO list:
 * make "struct_member" also end without "," but only in the last struct member!
 * brackets dont work as intended in nested function return types, since the return type works without them.
-* implement more operator highlighting
-* check if all usage of top level name "entity.name" is correct
-* allow block scopes like { } in blocks
 * implement binary and tertiary operator correctly, not as single highlight token!
-* implement last big missing feature, while loop
-* fix issues, see down below (mainly operator issues, that will be solved, wehn rewriting operators correctly)
-* add struct access with . !
+* fix issues, see down below (mainly operator issues, that will be solved, when rewriting operators correctly)
+* add proper assignment postfix operators, this has to be solved with the operator rewrite
 * ...
 * -----------------------------------------------------------
 Questions regarding syntax
@@ -123,10 +119,10 @@ export function test3() ~> U32{
 export function get_array() ~> [Bool; 4]{
     bsm {
         checkpoint 3
-    }
+    } 
+    
+    if n > 1 { return 1; }
     return [false, false, true, false];
-    //TODO check if the return is highlighted here!
-   // if n > 1 { return 1; }
 }
 
 //TODO fix the difference between types and return types with ~>!
@@ -303,7 +299,7 @@ export function assert(condition: Bool) {
 //TODO: is this valid syntax (the default value for the parameter?)
 function def(hello: Char = '\n') ~> Char {
     //TODO: is this syntax valid? (if yes, I need to implement it!)
-   // let u, i, o : Char;
+    // let u, i, o : Char;
 
 }
 
@@ -323,23 +319,40 @@ namespace std {
     }
 
     function t() {     
-        let u  : Char = '@';   
+        let u : Char = '@'; 
+        u = '=';
+        u = '!';
         let y: U32 = q!!;
 
         o! = 1;
-        o[1] = 12;
-
-
-        std::assert_equals(array[2].c, 'C');
+        // TODO support nested postfix operators
+        // also support the .field operator!
+        //o[1]! = 12;
+        //o[1][3] = 12;
+        //o.c = 'l';
 
         let is_not_equal = nothing != nothing;
-        
-        //TODO rewrite operators to support binary operators here:
-        std::assert(a != b);
+
+        std::assert_equals(array[2].c, 'C');   
 
         let world = World {
             game_objects: game_objects@,
+            test: -2,
+            test2: c!,
+            test3: [1,2,3]@,
+            test4: [1,2,3][3]@
+            test5: hello.c
         };
+
+       
+
+        //TODO rewrite operators to support binary operators here:
+        std::assert(a != b);
+        //std::assert(a@ + 1 == b@);
+        //std::assert(n@ != m@);
+        //std::assert(a@, +1, true == b@);
+
+        
 
         do {
             break;
@@ -366,8 +379,5 @@ namespace std {
 
         std::assert(a >= 42 != false);
     }
-
-
-
 
 }

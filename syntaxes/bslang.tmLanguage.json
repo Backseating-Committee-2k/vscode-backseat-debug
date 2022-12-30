@@ -870,6 +870,9 @@
             "patterns": [
                 {
                     "include": "#literal"
+                },
+                {
+                    "include": "#unary_operator"
                 }
             ]
         },
@@ -1021,7 +1024,7 @@
             ]
         },
         "variable_declaration_initialization": {
-            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)(?=.*=)",
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)(?=.*=)",
             "name": "entity.variable.declaration.initialization.bslang",
             "end": "(?<==.*)(;)",
             "beginCaptures": {
@@ -1078,7 +1081,7 @@
             ]
         },
         "variable_declaration_initialization_without_type": {
-            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(?==)",
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(?==)",
             "name": "entity.variable.declaration.initialization.without_type.bslang",
             "end": "(;)",
             "beginCaptures": {
@@ -1122,7 +1125,7 @@
             ]
         },
         "variable_declaration": {
-            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)",
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)",
             "name": "entity.variable.declaration.bslang",
             "end": "(;)",
             "beginCaptures": {
@@ -1151,7 +1154,7 @@
             ]
         },
         "variable_assignment": {
-            "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
+            "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
             "name": "entity.variable.assignment.bslang",
             "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
             "beginCaptures": {
@@ -1177,31 +1180,70 @@
             ]
         },
         "variable_assignment_with_operator": {
-            "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*)(@|!))\\s*(=)\\s*",
-            "name": "entity.variable.assignment.with_operator.postfix.bslang",
-            "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
-            "beginCaptures": {
-                "1": {
-                    "name": "variable.name.local_variable.bslang"
-                },
-                "2": {
-                    "name": "invalid.illegal.variable_name.bslang"
-                },
-                "3": {
-                    "name": "keyword.operator.unary.postfix.assignment.bslang"
-                },
-                "4": {
-                    "name": "keyword.operator.assignment.local_variable.with_operator.postfix.bslang"
-                }
-            },
-            "endCaptures": {
-                "1": {
-                    "name": "punctuation.separator.comma.variable.assigment.with_operator.postfix.bslang"
-                }
-            },
             "patterns": [
                 {
-                    "include": "#rvalue"
+                    "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*)(@|!))\\s*(=)\\s*",
+                    "name": "entity.variable.assignment.with_operator.postfix.bslang",
+                    "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "variable.name.local_variable.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.variable_name.bslang"
+                        },
+                        "3": {
+                            "name": "keyword.operator.unary.postfix.assignment.bslang"
+                        },
+                        "4": {
+                            "name": "keyword.operator.assignment.local_variable.with_operator.postfix.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.variable.assigment.with_operator.postfix.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                },
+                {
+                    "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*)(\\[)((?:\\d+_?)+)(\\]))\\s*(=)\\s*",
+                    "name": "entity.variable.assignment.with_operator.postfix.array_index.bslang",
+                    "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "variable.name.local_variable.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.variable_name.bslang"
+                        },
+                        "3": {
+                            "name": "meta.brace.square.operator.unary.postfix.array_index.assignment.begin.bslang"
+                        },
+                        "4": {
+                            "name": "constant.numeric.bslang"
+                        },
+                        "5": {
+                            "name": "meta.brace.square.operator.unary.postfix.array_index.assignment.end.bslang"
+                        },
+                        "6": {
+                            "name": "keyword.operator.assignment.local_variable.with_operator.array_index.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.variable.assigment.with_operator.postfix.array_index.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
                 }
             ]
         },
@@ -1218,6 +1260,9 @@
                 },
                 {
                     "include": "#while_loop"
+                },
+                {
+                    "include": "#do_while_loop"
                 },
                 {
                     "include": "#if_branch"
@@ -1401,7 +1446,7 @@
         },
         "identifier": {
             "name": "variable.name.bslang",
-            "match": "\\b(?!(loop|while|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)([a-z][a-zA-Z0-9_]*)\\b"
+            "match": "\\b(?!(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)([a-z][a-zA-Z0-9_]*)\\b"
         },
         "loop": {
             "begin": "\\s*(loop)\\s*({)",
@@ -1660,16 +1705,86 @@
             ]
         },
         "while_loop_definition": {
+            "begin": "(?<=while[ \\(])",
+            "end": "(?<=[ \\)])(?={)",
+            "name": "entity.while.loop.condition.bslang",
             "patterns": [
                 {
-                    "begin": "(?<=while[ \\(])",
-                    "end": "(?<=[ \\)])(?={)",
-                    "name": "entity.while.loop.condition.bslang",
+                    "include": "#boolean_expression"
+                }
+            ]
+        },
+        "do_while_loop": {
+            "begin": "\\s*(do)\\s*({)",
+            "end": "\\s*(;)",
+            "name": "entity.do.while.loop.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.do.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.do.while.loop.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.do.while.loop.condition.end.bslan"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#loop_body"
+                },
+                {
+                    "include": "#do_while_loop_end"
+                }
+            ]
+        },
+        "do_while_loop_end": {
+            "begin": "(})\\s*(while)",
+            "end": "(?=;)",
+            "name": "entity.while.loop.start.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.definition.do.while.loop.end.bslang"
+                },
+                "2": {
+                    "name": "keyword.control.while.postfix.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#do_while_loop_definition"
+                },
+                {
+                    "name": "entity.bracket.while.loop.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.do.while.loop.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.do.while.loop.expression.end.bslang"
+                        }
+                    },
                     "patterns": [
                         {
-                            "include": "#boolean_expression"
+                            "include": "#do_while_loop_definition"
                         }
                     ]
+                }
+            ]
+        },
+        "do_while_loop_definition": {
+            "begin": "(?<=}\\s*while)",
+            "end": "(?=;)",
+            "name": "entity.do.while.loop.condition.bslang",
+            "patterns": [
+                {
+                    "include": "#boolean_expression"
                 }
             ]
         },
@@ -1778,16 +1893,12 @@
             ]
         },
         "if_branch_definition": {
+            "begin": "(?<=if[ \\(])",
+            "end": "(?<=[ \\)])(?={)",
+            "name": "entity.if.branch.condition.bslang",
             "patterns": [
                 {
-                    "begin": "(?<=if[ \\(])",
-                    "end": "(?<=[ \\)])(?={)",
-                    "name": "entity.if.branch.condition.bslang",
-                    "patterns": [
-                        {
-                            "include": "#boolean_expression"
-                        }
-                    ]
+                    "include": "#boolean_expression"
                 }
             ]
         },
@@ -1839,10 +1950,6 @@
                 }
             ]
         },
-         "keyword": {
-            "name": "keyword.control.bslang",
-            "match": "(\\b(do)\\b)"
-        },
         "operator": {
             "patterns": [
                 {
@@ -1860,9 +1967,6 @@
             "patterns": [
                 {
                     "include": "#unary_prefix_operator"
-                },
-                {
-                    "include": "#array_index_operator"
                 },
                 {
                     "include": "#unary_postfix_operator"
@@ -1910,12 +2014,25 @@
             ]
         },
         "unary_postfix_operator": {
-            "begin": "(?=[^\n]*(?:@|!)).{0}(?!')",
-            "name": "entity.operator.unary_operator.postfix.bslang",
+            "patterns": [
+                {
+                    "include": "#unary_postfix_operator_pointer_access"
+                },
+                {
+                    "include": "#unary_postfix_operator_struct_access"
+                },
+                {
+                    "include": "#array_index_operator"
+                }
+            ]
+        },
+        "unary_postfix_operator_pointer_access": {
+            "begin": "(?=[^\n\\]]*(?:@|!)(?!'|=))",
+            "name": "entity.operator.unary_operator.postfix.pointer.access.bslang",
             "end": "(@|!)",
             "endCaptures": {
                 "1": {
-                    "name": "keyword.operator.unary.postfix.bslang"
+                    "name": "keyword.operator.unary.postfix.pointer.access.bslang"
                 }
             },
             "patterns": [
@@ -1924,16 +2041,39 @@
                 },
                 {
                     "include": "#rvalue"
+                },
+                {
+                    "include": "#unary_operator"
+                }
+            ]
+        },
+        "unary_postfix_operator_struct_access": {
+            "begin": "(\\.)(?=[a-z])",
+            "name": "entity.operator.unary_operator.postfix.struct.access.bslang",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.unary.postfix.struct.access.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#identifier"
                 }
             ]
         },
         "array_index_operator": {
-            "begin": "(\\[)(?=(?:(?:\\d+_?)+)])",
-            "name": "entity.operator.unary_operator.postfix.array_index.bslang",
+            "begin": "(\\[)(?=(?:(?:\\d+_?)+)\\])",
+            "name": "entity.operator.unary_operator.postfix.array.index.bslang",
             "end": "(\\])",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.square.operator.unary.postfix.array.index.begin.bslang"
+                }
+            },
             "endCaptures": {
                 "1": {
-                    "name": "keyword.operator.unary.postfix.array_index.bslang"
+                    "name": "meta.brace.square.operator.unary.postfix.array.index.end.bslang"
                 }
             },
             "patterns": [
