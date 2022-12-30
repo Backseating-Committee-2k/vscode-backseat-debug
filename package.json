@@ -1,16 +1,31 @@
 {
     "name": "backseat-debug",
     "displayName": "Backseat Debug",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "publisher": "thejp",
-    "description": "Debug Extension for debugging backseat (.bs) and bssembler (.bsm) applications.",
+    "description": "Extension for the backseat language (bslang) (.bs) and bssembler (.bsm) applications:\n It provides an debugger for bssembler and syntax highlighting for bslang and bssembler",
     "author": {
         "name": "Janis Peyer"
     },
+    "contributors": [
+        {
+            "name": "Janis Peyer",
+            "url": "https://github.com/TheJP"
+        },
+        {
+            "name": "Michael Gerhold",
+            "url": "https://github.com/mgerhold"
+        },
+        {
+            "name": "Totto16",
+            "url": "https://github.com/Totto16"
+        }
+    ],
     "license": "MIT",
     "keywords": [
         "backseat",
         "bssembler",
+        "bslang",
         "bs",
         "bsm",
         "backseatsafesystem"
@@ -19,7 +34,8 @@
         "vscode": "^1.66.0"
     },
     "categories": [
-        "Debuggers"
+        "Debuggers",
+        "Programming Languages"
     ],
     "repository": {
         "type": "git",
@@ -60,7 +76,9 @@
     "activationEvents": [
         "onDebugResolve:bssembler",
         "onCommand:extension.backseat-debug.runEditorContents",
-        "onCommand:extension.backseat-debug.debugEditorContents"
+        "onCommand:extension.backseat-debug.debugEditorContents",
+        "onLanguage:bslang",
+        "onLanguage:bssembler"
     ],
     "contributes": {
         "languages": [
