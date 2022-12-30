@@ -2101,7 +2101,7 @@
         },
         "binary_operator_bitwise": {
             "match": "(and|or|xor|<<|>>)",
-            "name": "keyword.operator.binary.numeric.bslang"
+            "name": "keyword.operator.binary.bitwise.bslang"
         },
         "binary_operator_compare": {
             "match": "(>=|>|!=|==|<=|<)",
