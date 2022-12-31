@@ -1,7 +1,7 @@
 {
     "name": "backseat-debug",
     "displayName": "Backseat Debug",
-    "version": "0.4.5",
+    "version": "0.5.0",
     "publisher": "thejp",
     "description": "Backseat (bslang, .bs) and Bssembler (.bsm) – debugger for Bssembler and syntax highlighting for both.",
     "author": {
