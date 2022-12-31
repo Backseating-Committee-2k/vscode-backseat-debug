@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-backseat-debug" extension will be documented in this file.
 
+## [0.5.0] - 2022-12-31
+
+### Added
+
+* Backseat language (bslang) syntax highlighting contributed by Totto16.
+
 ## [0.4.5] - 2022-10-15
 
 ### Added

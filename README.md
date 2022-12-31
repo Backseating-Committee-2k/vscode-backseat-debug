@@ -1,6 +1,6 @@
 # Backseat Debug
 
-Debug Extension for debugging backseat (`.bs`) and bssembler (`.bsm`) applications.
+Backseat (bslang, .bs) and Bssembler (.bsm) – debugger for Bssembler and syntax highlighting for both.
 
 This project is still a work in progress as are the backseat language and its platforms. Debugging is only implemented for `.bsm` files so far.
 
@@ -8,12 +8,14 @@ This project is still a work in progress as are the backseat language and its pl
 
 ## Features
 
-* Debugging bssembler (`.bsm`) files.
-* Stopping on breakpoints and/or on entry.
-* Stepping through application line by line.
-* Displaying register values.
-* Changing register values.
-* Displaying a call stack.
+* Debugging Bssembler (`.bsm`) files.
+  * Stopping on breakpoints and/or on entry.
+  * Stepping through application line by line.
+  * Displaying register values.
+  * Changing register values.
+  * Displaying a call stack.
+* Bssembler syntax highlighting
+* Backseat (bslang) syntax highlighting
 
 ## Requirements
 
@@ -36,6 +38,10 @@ This extension contributes the following settings:
 ## Known Issues
 
 ## Release Notes
+
+### 0.5.x
+
+Added Backseat Language (bslang) syntax highlighting contributed by Totto16.
 
 ### 0.4.x
 
