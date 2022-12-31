@@ -1,9 +1,9 @@
 {
     "name": "backseat-debug",
     "displayName": "Backseat Debug",
-    "version": "0.4.6",
+    "version": "0.4.5",
     "publisher": "thejp",
-    "description": "Extension for the backseat language (bslang) (.bs) and bssembler (.bsm) applications:\n It provides an debugger for bssembler and syntax highlighting for bslang and bssembler",
+    "description": "Backseat (bslang, .bs) and Bssembler (.bsm) – debugger for Bssembler and syntax highlighting for both.",
     "author": {
         "name": "Janis Peyer"
     },
