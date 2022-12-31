@@ -1,0 +1,383 @@
+import std.console;
+// a comment here :) 
+
+/*
+a block comment 
+*/
+
+// empty block, this should work too!!
+/**/
+type THIS_SHOULD_BE_HIGHLIGHTED {
+      //TODO are the trailing this "," optional or not?
+    K {a: Char },
+    J {
+        a: Bool,
+        b: Char
+    },
+}
+
+//TODO
+/*
+general TODO list:
+* make "struct_member" also end without "," but only in the last struct member!
+* brackets dont work as intended in nested function return types, since the return type works without them.
+* implement binary and tertiary operator correctly, not as single highlight token!
+* fix issues, see down below (mainly operator issues, that will be solved, when rewriting operators correctly)
+* add proper assignment postfix operators, this has to be solved with the operator rewrite
+* ...
+* -----------------------------------------------------------
+Questions regarding syntax
+* can you put export before "type"?
+* is in "type T {S {}}"" S or T a struct name and which of the ones is the type?
+* How are nested function return types like "Function() ~> Function() ~> Char" treated, if they're even allowed?
+* * "Function() ~> (Function() ~> Char)" right associative (haskell like)
+* * "(Function() ~> Function()) ~> Char" left associative
+* * to solve these there have to be () allowed, are they?
+* ...
+*/
+
+/**
+* this is a documentation comment
+* @description A test type
+* @author test
+*/
+type T {
+//TODO is in type T {S {}} S or T a struct name?
+    S {
+        // this comment should be allowed
+        n: U32,
+        /*
+        This comment too
+        */
+        b: Bool
+    },
+    U {
+        /** And specially these too
+        * @description a struct field description
+        */
+        s1: S,
+        s2: S
+    },
+    A {
+        s1: [Bool;5],
+        s2: [U32],
+        s3: Function(Bool),
+        t3: Function(Bool, Char),
+        r3: Function(Bool, Function(Char, U32)),
+        s4: mutable S,
+        r4: -> S,
+        z4: Function(Char) ~> Char,
+        w4: Function(Char, U32) ~> (Function(S) ~> (Function([Bool; 8]) ~> Nothing)),
+        s5: mutable -> mutable Function([U32; 1]),
+        s6: [[[Bool; 9]; 9]]
+    },
+    //TODO is this last "," optional or not?
+    Empty {},
+}
+
+namespace test {
+    //test namespace
+    //TODO: is an export keyword possible here?
+    type T {
+        U{
+            h:Function(U32) ~> Nothing,
+        },
+    }
+}
+
+//TODO allow unicode identifier
+/* 
+function 🎅(){
+    return 24;
+} */
+
+function simple(a: Char){
+    //nothing here
+    return nothing;
+}
+
+function nested_return_type(a: Char) ~> Function(S, K) ~> Function(S, U32) ~> T {
+    //nothing here
+    return S{n: 2, b: false};
+}
+
+export function test() ~> U32{
+    return '\0';
+    //TODO the range of chars is not enough for 'ü'!!
+    return 'ü';
+}
+
+export function test2() ~> U32{
+    return 4324_32;
+}
+
+export function test3() ~> U32{
+    return get_u32('s', 987_254, test(), var);
+}
+
+
+export function get_array() ~> [Bool; 4]{
+    bsm {
+        checkpoint 3
+    } 
+    
+    if n > 1 { return 1; }
+    return [false, false, true, false];
+}
+
+//TODO fix the difference between types and return types with ~>!
+/* function complex_fn(fn_input: Function(Char, Bool) ~> [Bool]) ~> (Function(U32) ~> [Bool; 8]){
+    return get_array;
+} */
+
+
+function defaults(c: Char = '\n', f:U32 = 4_232_321, a : [Bool; 2] = [false, true], h:S = S{n:4,b:false}, n:Nothing = nothing) ~> [Nothing; 3]{
+    {return a;} // this is a block with a statement in one line
+    return [nothing, nothing, nothing];
+}
+
+//TODO string literals are not supported atm!
+/*
+function get_string() ~> String {
+    return "test with \" escape and \t \n \0 \\";
+}
+
+*/
+
+function main() ~> Nothing {
+    let p: U32;
+    p = 0xCAFFE;  //comment after something
+    p = 0o767313;
+    p = 0b10100010;
+    let a = 4_200;
+    let b: Bool = false;
+    let c: Bool = true;
+    call(not b);
+    std::assert(not b);
+    let d: Char = 'a';
+    d = 'a';
+    '\n';
+    ' ';
+    '\\';
+    '\';
+    '~';
+    '"';
+
+    let ptr: mutable Function(U32) ~> Bool = f;
+    let ptr2: mutable -> mutable U32 = a@;
+    //TODO: is there a nullptr or similar keyword?
+    let long_ptr: -> -> -> -> U32 = 0;
+    let functions = [f, g, f, f, f, g];
+    let num_functions = value_size(functions) / value_size(functions[0]);
+    let func_with_return : Function(U32) ~> Nothing;
+
+    loop {
+        // test comment inside here
+        function s(){
+            return nothing;
+        }
+        break;
+        let z = [8];
+        continue;
+    }
+
+    let i = 's' > 2;
+    let j = ('s' > 'a') > 2;
+    let z: U32 = 1 + 1;
+    let z1: U32 = -1;
+    let z2: U32 = + (-1);
+    let z3: Bool = f(1) > g([1,3,4]); 
+    let z4: U32 = 0b100100 or 0b10001; 
+    let z5: U32 = (o > 1) ? 1 : 0;
+    let z6: U32 = 982 * 0xFF; 
+    let z7: U32 = 982 mod 0xFF; 
+    let z8: U32 = 982 << 0xFF; 
+    let z9: U32 = 982 / 0xFF; 
+    let u = not 0;
+    let arr = [not true, not false];
+
+    let l = call(1)[4];
+    let begin = functions[1]@;
+    let functions = h;
+
+    for let i: mutable U32 = n; i < 20; i = i + 1 {
+        let n_plus_k: U32 = n + k;
+        let z : mutable U32 = [1, 3252, 32_322][2];
+        n = k;
+        k = n_plus_k;
+    }
+
+    while true {
+        break;
+        continue;
+    }
+
+    let n: mutable U32 = 1;
+    let k: mutable U32 = 0;
+    while n < 100 {
+        let n_plus_k: U32 = n + k;
+        k = n;
+        n = n_plus_k;
+        continue;
+        n = 10000;
+    }
+
+    for ;; {
+        break;
+        continue;
+        let i: U32 = 0;
+    }
+    
+  
+
+    for (let i: U32 = variable; cond; cond = false) {
+        variable;
+        std::assert_equals(variable, 42);
+        i;
+        std::assert_equals(i, 42);
+        let variable: U32 = 0;
+        std::assert_equals(variable, 0);
+        std::assert_equals(i, 42);
+
+        if 7 > n {
+            // break should be allowed here
+            break;
+        }
+    }
+
+    function s(){
+        return true;
+    }
+
+
+    if n > 4 {
+        bsm {
+            checkpoint 1
+        }
+    }
+    else {
+        bsm {
+            checkpoint 3
+        }
+    }
+
+    if a >= b {
+    } 
+    else if a < b {
+        std::assert(false);
+    }
+    else {
+        std::assert(false);
+    }
+
+    let n: mutable U32 = 1;
+    let k: mutable U32 = 0;
+    loop {
+        if n > 100 {
+            break;
+        }
+        let n_plus_k: U32 = n + k;
+        k = n;
+        n = n_plus_k;
+        continue;
+        n = 10000;
+    }
+
+}
+
+export function assert(condition: Bool) {
+    // some comment here
+    bsm {
+        copy_byte *R0, R1
+        assert R1, 1
+    }
+    /*
+    a multiline comment with * in it and also /* (this is not ok for seatbelt v1 ?!?!?)
+    */
+}
+
+//TODO: is this valid syntax (the default value for the parameter?)
+function def(hello: Char = '\n') ~> Char {
+    //TODO: is this syntax valid? (if yes, I need to implement it!)
+    // let u, i, o : Char;
+
+}
+
+
+namespace std {
+
+    function assert_equals(lhs: Nothing, rhs: Nothing) { }
+
+    export function swap(lhs: ->mutable U32, rhs: ->mutable U32) {
+            let temp: U32 = lhs!;
+            lhs! = rhs!;
+            rhs! = temp;
+    }
+
+    function a() ~> Nothing {
+        return nothing;
+    }
+
+    function t() {     
+        let u : Char = '@'; 
+        u = '=';
+        u = '!';
+        let y: U32 = q!!;
+
+        o! = 1;
+        // TODO support nested postfix operators
+        // also support the .field operator!
+        //o[1]! = 12;
+        //o[1][3] = 12;
+        //o.c = 'l';
+
+        let is_not_equal = nothing != nothing;
+
+        std::assert_equals(array[2].c, 'C');   
+
+        let world = World {
+            game_objects: game_objects@,
+            test: -2,
+            test2: c!,
+            test3: [1,2,3]@,
+            test4: [1,2,3][3]@,
+            test5: hello.c
+        };
+
+       
+
+        //TODO rewrite operators to support binary operators here:
+        std::assert(a != b);
+        //std::assert(a@ + 1 == b@);
+        //std::assert(n@ != m@);
+        //std::assert(a@, +1, true == b@);
+        //b or true;
+        
+
+        do {
+            break;
+            continue;
+        } while false;
+
+        do {
+            break;
+            continue;
+        } while true;
+
+        let n: mutable U32 = 1000;
+        let k: mutable U32 = 0;
+        do {
+            if n > 100 {
+                n = 1;
+            }
+            let n_plus_k: U32 = n + k;
+            k = n;
+            n = n_plus_k;
+            continue;
+            n = 10000;
+        } while n < 100;
+
+        std::assert(a >= 42 != false);
+    }
+
+}

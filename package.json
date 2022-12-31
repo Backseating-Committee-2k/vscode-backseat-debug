@@ -3,14 +3,29 @@
     "displayName": "Backseat Debug",
     "version": "0.4.5",
     "publisher": "thejp",
-    "description": "Debug Extension for debugging backseat (.bs) and bssembler (.bsm) applications.",
+    "description": "Backseat (bslang, .bs) and Bssembler (.bsm) – debugger for Bssembler and syntax highlighting for both.",
     "author": {
         "name": "Janis Peyer"
     },
+    "contributors": [
+        {
+            "name": "Janis Peyer",
+            "url": "https://github.com/TheJP"
+        },
+        {
+            "name": "Michael Gerhold",
+            "url": "https://github.com/mgerhold"
+        },
+        {
+            "name": "Totto16",
+            "url": "https://github.com/Totto16"
+        }
+    ],
     "license": "MIT",
     "keywords": [
         "backseat",
         "bssembler",
+        "bslang",
         "bs",
         "bsm",
         "backseatsafesystem"
@@ -19,7 +34,8 @@
         "vscode": "^1.66.0"
     },
     "categories": [
-        "Debuggers"
+        "Debuggers",
+        "Programming Languages"
     ],
     "repository": {
         "type": "git",
@@ -60,7 +76,9 @@
     "activationEvents": [
         "onDebugResolve:bssembler",
         "onCommand:extension.backseat-debug.runEditorContents",
-        "onCommand:extension.backseat-debug.debugEditorContents"
+        "onCommand:extension.backseat-debug.debugEditorContents",
+        "onLanguage:bslang",
+        "onLanguage:bssembler"
     ],
     "contributes": {
         "languages": [
@@ -70,6 +88,13 @@
                     ".bsm"
                 ],
                 "configuration": "./bssembler-language-configuration.json"
+            },
+            {
+                "id": "bslang",
+                "extensions": [
+                    ".bs"
+                ],
+                "configuration": "./bslang-language-configuration.json"
             }
         ],
         "grammars": [
@@ -77,6 +102,11 @@
                 "language": "bssembler",
                 "scopeName": "source.bssembler",
                 "path": "./syntaxes/bssembler.tmLanguage.json"
+            },
+            {
+                "language": "bslang",
+                "scopeName": "source.bslang",
+                "path": "./syntaxes/bslang.tmLanguage.json"
             }
         ],
         "menus": {

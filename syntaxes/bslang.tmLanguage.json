@@ -1,0 +1,2143 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Backseat language",
+    "scopeName": "source.bslang",
+    "foldingStartMarker": "{",
+    "foldingStopMarker": "}",
+    "TODO": "this is just WIP, it has to be improved a lot!",
+    "regex-docs": "https://macromates.com/manual/en/regular_expressions",
+    "patterns": [
+        {
+            "include": "#comment"
+        },
+        {
+            "include": "#function"
+        },
+        {
+            "include": "#struct"
+        },
+        {
+            "include": "#import"
+        },
+        {
+            "include": "#namespace"
+        }
+    ],
+    "repository": {
+        "import": {
+            "name": "entity.import.bslang",
+            "begin": "(import)\\s+",
+            "end": "(;)",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.import.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.terminator.import.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "name": "entity.import.bslang",
+                    "match": "([a-z][a-zA-Z0-9_]*)(?:(\\.)|(?=\\s*;))",
+                    "captures": {
+                        "1": {
+                            "name": "string.quoted.other.import.bslang"
+                        },
+                        "2": {
+                            "name": "keyword.operator.inport.seperator.bslang"
+                        }
+                    }
+                }
+            ]
+        },
+        "struct": {
+            "begin": "(type)\\s+([A-Z][a-zA-Z0-9_]*)\\s*({)",
+            "end": "\\s*(})",
+            "name": "entity.struct.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.type.bslang"
+                },
+                "2": {
+                    "name": "entity.name.type.bslang"
+                },
+                "3": {
+                    "name": "punctuation.definition.type.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.type.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#struct_member"
+                },
+                {
+                    "include": "#comment"
+                }
+            ]
+        },
+        "struct_member": {
+            "begin": "\\s*([A-Z][a-zA-Z0-9_]*)\\s*({)",
+            "end": "(})\\s*(,)",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.struct.member.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.struct.member.end.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.comma.struct.member.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#struct_member_field"
+                }
+            ]
+        },
+        "struct_member_field": {
+            "begin": "\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+            "name": "entity.struct_field.bslang",
+            "end": "(?=\\s*})|(?:(,)(?=$|\\b))",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.name.struct_field.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.colon.struct.field.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.struct.field.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "type": {
+            "name": "entity.name.type.top_level.bslang",
+            "patterns": [
+                {
+                    "include": "#builtin_type"
+                },
+                {
+                    "include": "#mutable_type"
+                },
+                {
+                    "include": "#pointer_type"
+                },
+                {
+                    "include": "#custom_type"
+                }
+            ]
+        },
+        "builtin_type": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.builtin.bslang",
+                    "match": "(U32|Char|Bool|Nothing)"
+                },
+                {
+                    "include": "#function_type"
+                },
+                {
+                    "include": "#array_type"
+                }
+            ]
+        },
+        "function_type": {
+            "patterns": [
+                {
+                    "include": "#function_type_with_return"
+                },
+                {
+                    "include": "#function_type_without_return"
+                }
+            ]
+        },
+        "function_type_without_return": {
+            "name": "entity.name.type.function.bslang",
+            "begin": "(Function)(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.function.keyword.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.type.function.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.type.function.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "begin": "(,)",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.function.parameters.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "function_type_with_return": {
+            "name": "entity.name.type.function.with_return.bslang",
+            "begin": "(Function)(\\()(?=[^\n]*\\)\\s*~>).{0}",
+            "end": "(?<=~>\\s*[^\n]*).{0}(?=(.?\\s*$)|(?:\\s*(?:{|;|=))|(\\)(?!\\s*~>)))",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.function.keyword.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.type.function.with_return.begin.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "begin": "(,)",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.function.parameters.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                },
+                {
+                    "name": "entity.name.type.function.return_type.bslang",
+                    "begin": "(\\))\\s*(~>)",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.type.function.with_return.end.bslang"
+                        },
+                        "2": {
+                            "name": "keyword.operator.return_type.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#bracket_type"
+                        },
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "bracket_type": {
+            "name": "entity.bracket.type.expression.bslang",
+            "begin": "\\s*(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.round.type.expression.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.round.type.expression.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "array_type": {
+            "name": "entity.name.type.array.bslang",
+            "begin": "(\\[)",
+            "end": "(\\])",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.definition.type.array.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.type.array.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                },
+                {
+                    "include": "#array_with_length"
+                }
+            ]
+        },
+        "array_with_length": {
+            "name": "entity.name.type.array.with_length.bslang",
+            "begin": ".{0}",
+            "end": "(;)\\s*(\\d+)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.type.array.with_length.bslang"
+                },
+                "2": {
+                    "name": "constant.numeric.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "mutable_type": {
+            "name": "entity.storage.modifier.mutable.bslang",
+            "begin": "(mutable)\\s+",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.modifier.mutable.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "pointer_type": {
+            "name": "entity.name.type.pointer.bslang",
+            "begin": "(->)\\s*",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.pointer.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "custom_type": {
+            "name": "entity.name.type.custom.bslang",
+            "match": "(?!U32|Char|Bool|Nothing)([A-Z][a-zA-Z0-9_]*)"
+        },
+        "comment": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.bslang",
+                    "match": "\\s*//.*"
+                },
+                {
+                    "name": "comment.block.block.empty.bslang",
+                    "match": "\\s*/\\**/"
+                },
+                {
+                    "name": "comment.block.documentation.bslang",
+                    "begin": "\\s*/\\*{2}",
+                    "end": "\\*/",
+                    "patterns": [
+                        {
+                            "include": "#empty_line"
+                        },
+                        {
+                            "match": ".+?(?=\\*/)"
+                        },
+                        {
+                            "include": "#bs_doc"
+                        }
+                    ]
+                },
+                {
+                    "name": "comment.block.bslang",
+                    "begin": "\\s*/\\*",
+                    "end": "\\*/",
+                    "patterns": [
+                        {
+                            "include": "#empty_line"
+                        },
+                        {
+                            "match": ".*?(?=\\*/)"
+                        }
+                    ]
+                },
+                {
+                    "include": "#empty_line"
+                }
+            ]
+        },
+        "empty_line": {
+            "name": "entity.empty-line.bslang",
+            "match": "^\\s*$"
+        },
+        "bs_doc": {
+            "patterns": [
+                {
+                    "name": "comment.block.documentation.bs_doc",
+                    "match": "\\s*\\*\\s+(@)([a-z][a-zA-Z0-9_\\.]*)\\s+(.*)",
+                    "captures": {
+                        "1": {
+                            "name": "punctuation.decorator.bs_doc"
+                        },
+                        "2": {
+                            "name": "storage.type.class.bs_doc"
+                        },
+                        "3": {
+                            "name": "comment.block.documentation.bs_doc.raw"
+                        }
+                    }
+                },
+                {
+                    "name": "comment.block.documentation.bslang",
+                    "match": "\\s*\\*\\s+(.*)",
+                    "captures": {
+                        "1": {
+                            "name": "comment.block.documentation.bslang"
+                        }
+                    }
+                }
+            ]
+        },
+        "function": {
+            "name": "entity.function.bslang",
+            "begin": "\\s*?((export)?\\s+)?(function)\\s+([a-z][a-zA-Z0-9_]*)\\s*(?=\\()",
+            "end": "(})",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.export.bslang"
+                },
+                "3": {
+                    "name": "storage.type.function.bslang"
+                },
+                "4": {
+                    "name": "entity.name.function.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.defintion.block.end.function.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#function_definition"
+                },
+                {
+                    "include": "#function_body"
+                }
+            ]
+        },
+        "function_definition": {
+            "name": "entity.function.definition.bslang",
+            "begin": "(?<=[a-zA-Z0-9_]\\s*?).{0}(?=\\()",
+            "end": "(?={).{0}",
+            "patterns": [
+                {
+                    "include": "#function_definition_with_return_type"
+                },
+                {
+                    "include": "#function_definition_without_return_type"
+                }
+            ]
+        },
+        "function_definition_with_return_type": {
+            "name": "entity.function.definition.with_return_type.bslang",
+            "begin": "(?<=[a-zA-Z0-9_]\\s*?).{0}(?=[^\n]*~>)",
+            "end": "(?={).{0}",
+            "patterns": [
+                {
+                    "begin": "(?<=[a-zA-Z0-9_]\\s*?).{0}(?=\\()",
+                    "end": "(?=~>).{0}(?!\\s*?{)",
+                    "patterns": [
+                        {
+                            "include": "#function_argument_list"
+                        }
+                    ]
+                },
+                {
+                    "name": "entity.name.function.return_type.bslang",
+                    "begin": "(~>)",
+                    "end": "(?={)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.return_type.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        },
+                        {
+                            "include": "#bracket_type"
+                        }
+                    ]
+                }
+            ]
+        },
+        "function_definition_without_return_type": {
+            "name": "entity.function.definition.without_return_type.bslang",
+            "begin": "(?=\\().{0}",
+            "end": "(?={).{0}",
+            "patterns": [
+                {
+                    "include": "#function_argument_list"
+                }
+            ]
+        },
+        "function_argument_list": {
+            "name": "entity.function.argument_list.bslang",
+            "begin": "(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.defintion.paramters.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.defintion.paramters.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#function_parameter"
+                }
+            ]
+        },
+        "function_parameter": {
+            "begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+            "name": "entity.function.function_parameter.bslang",
+            "end": "(,)|(?=\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.parameter.name.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.colon.paramter.type.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.function.paramter.bslang"
+                }
+            },
+
+            "patterns": [
+                {
+                    "include": "#function_parameter_with_default"
+                },
+                {
+                    "name": "entity.function.function_parameter.with_default.bslang",
+                    "begin": "(?<=:\\s*)",
+                    "end": "(?=\\)|,)",
+                    "patterns": [
+                        {
+                            "include": "#function_parameter_with_default"
+                        }
+                    ]
+                }
+            ]
+        },
+        "function_parameter_with_default": {
+            "name": "entity.function.function_parameter.with_default.bslang",
+            "begin": "(?<=:\\s*)",
+            "end": "(?=\\)|,)",
+            "patterns": [
+                {
+                    "begin": "(=)\\s*",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.operator.assignment.default_parameter.bslang"
+                        }
+                    },
+                    "end": "(?=\\)|,)",
+                    "patterns": [
+                        {
+                            "include": "#literal"
+                        }
+                    ]
+                },
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "literal": {
+            "patterns": [
+                {
+                    "include": "#char_literal"
+                },
+                {
+                    "include": "#numeric_literal"
+                },
+                {
+                    "include": "#builtin_literal"
+                },
+                {
+                    "include": "#array_literal"
+                },
+                {
+                    "include": "#struct_literal"
+                }
+            ]
+        },
+        "numeric_literal": {
+            "patterns": [
+                {
+                    "include": "#octal_literal"
+                },
+                {
+                    "include": "#hexadecimal_literal"
+                },
+                {
+                    "include": "#binary_literal"
+                },
+                {
+                    "include": "#decimal_literal"
+                }
+            ]
+        },
+        "octal_literal": {
+            "name": "constant.numeric.bslang",
+            "match": "(0o(?:[0-7]+_?)+)",
+            "captures": {
+                "1": {
+                    "name": "entity.literal.numeric.octal.bslang"
+                }
+            }
+        },
+        "hexadecimal_literal": {
+            "name": "constant.numeric.bslang",
+            "match": "(0x(?:[\\dA-Fa-f]+_?)+)",
+            "captures": {
+                "1": {
+                    "name": "entity.literal.numeric.hexadecimal.bslang"
+                }
+            }
+        },
+        "binary_literal": {
+            "name": "constant.numeric.bslang",
+            "match": "(0b(?:[01]+_?)+)",
+            "captures": {
+                "1": {
+                    "name": "entity.literal.numeric.binary.bslang"
+                }
+            }
+        },
+        "decimal_literal": {
+            "name": "constant.numeric.bslang",
+            "match": "((?:\\d+_?)+)",
+            "captures": {
+                "1": {
+                    "name": "entity.literal.numeric.decimal.bslang"
+                }
+            }
+        },
+        "char_literal": {
+            "patterns": [
+                {
+                    "name": "entity.literal.char.empty.invalid.bslang",
+                    "match": "('')",
+                    "captures": {
+                        "1": {
+                            "name": "invalid.illegal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.invalid.bslang",
+                    "match": "(')([\\\\'])(')",
+                    "captures": {
+                        "0": {
+                            "name": "entity.literal.char.invalid.bslang"
+                        },
+                        "1": {
+                            "name": "punctuation.char_literal.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.bslang"
+                        },
+                        "3": {
+                            "name": "punctuation.char_literal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.bslang",
+                    "match": "(')([^\\\\'])(')",
+                    "captures": {
+                        "0": {
+                            "name": "entity.literal.char.bslang"
+                        },
+                        "1": {
+                            "name": "punctuation.char_literal.bslang"
+                        },
+                        "2": {
+                            "name": "string.quotes.single.char_literal.bslang"
+                        },
+                        "3": {
+                            "name": "punctuation.char_literal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.escaped.bslang",
+                    "match": "(')(\\\\[n\\\\tnvfr0'])(')",
+                    "captures": {
+                        "0": {
+                            "name": "entity.literal.char.escaped.bslang"
+                        },
+                        "1": {
+                            "name": "punctuation.char_literal.bslang"
+                        },
+                        "2": {
+                            "name": "constant.character.escape.bslang"
+                        },
+                        "3": {
+                            "name": "punctuation.char_literal.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.literal.char.escaped.invalid.bslang",
+                    "match": "(')(\\\\[^n\\\\tnvfr0'])(')",
+                    "captures": {
+                        "0": {
+                            "name": "entity.literal.char.escaped.invalid.bslang"
+                        },
+                        "1": {
+                            "name": "punctuation.char_literal.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.bslang"
+                        },
+                        "3": {
+                            "name": "punctuation.char_literal.bslang"
+                        }
+                    }
+                }
+            ]
+        },
+        "builtin_literal": {
+            "patterns": [
+                {
+                    "include": "#builtin_boolean_literal"
+                },
+                {
+                    "include": "#builtin_nothing_literal"
+                }
+            ]
+        },
+        "builtin_boolean_literal": {
+            "name": "constant.language.boolean.bslang",
+            "match": "(true|false)"
+        },
+        "builtin_nothing_literal": {
+            "name": "constant.language.nothing.bslang",
+            "match": "(nothing)"
+        },
+        "array_literal": {
+            "name": "entity.array.literal.bslang",
+            "begin": "(?<![a-zA-Z0-9_])(\\[)",
+            "end": "(\\])",
+            "beginCaptures": {
+                "0": {
+                    "name": "meta.block.array_literal.begin.bslang"
+                },
+                "1": {
+                    "name": "meta.brace.square.array_literal.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "meta.block.array_literal.end.bslang"
+                },
+                "1": {
+                    "name": "meta.brace.square.array_literal.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
+                },
+                {
+                    "begin": "(,)",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.array_literal.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                }
+            ]
+        },
+        "struct_literal": {
+            "name": "entity.struct.literal.bslang",
+            "begin": "([A-Z][a-zA-Z0-9_]*)\\s*(\\{)",
+            "end": "(\\})",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.type.bslang"
+                },
+                "2": {
+                    "name": "meta.block.struct_literal.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.block.struct_literal.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#struct_literal_member"
+                },
+                {
+                    "begin": "(,)",
+                    "end": ".{0}",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.struct_literal.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#struct_literal_member"
+                        }
+                    ]
+                }
+            ]
+        },
+        "struct_literal_member": {
+            "begin": "([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:)\\s*",
+            "name": "entity.struct_field.bslang",
+            "end": "(,)|(?=\\})",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.name.struct_literal.bslang"
+                },
+                "2": {
+                    "name": "punctuation.separator.colon.struct.literal.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.struct_literal.member.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#literal"
+                },
+                {
+                    "include": "#unary_operator"
+                }
+            ]
+        },
+        "function_body": {
+            "name": "entity.function.body.bslang",
+            "begin": "({)",
+            "end": "(?=\\s*})",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.defintion.block.begin.function.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#block_content"
+                }
+            ]
+        },
+        "block_content": {
+            "patterns": [
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#bracket_block_content"
+                },
+                {
+                    "include": "#controll_flow"
+                },
+                {
+                    "include": "#expression"
+                },
+                {
+                    "include": "#function"
+                },
+                {
+                    "include": "#statement"
+                }
+            ]
+        },
+        "bracket_block_content": {
+            "name": "entity.bracket.type.block.bslang",
+            "begin": "\\s*({)",
+            "end": "\\s*(})",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.curly.type.block.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.curly.type.block.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#block_content"
+                }
+            ]
+        },
+        "statement": {
+            "patterns": [
+                {
+                    "include": "#inline_bssembler"
+                },
+                {
+                    "include": "#function_call_statement"
+                },
+                {
+                    "include": "#literal_statement"
+                }
+            ]
+        },
+        "function_call_statement": {
+            "begin": "^\\s*(?=[a-z].*\\()",
+            "end": "(;)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.terminator.function_call.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#function_call"
+                }
+            ]
+        },
+        "literal_statement": {
+            "begin": "^\\s*",
+            "end": "(;)",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.terminator.literal.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#literal"
+                }
+            ]
+        },
+        "inline_bssembler": {
+            "begin": "\\s*(bsm)\\s+({)",
+            "end": "\\s*(})",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.bsm.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.bsm.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.bsm.end.bslang"
+                }
+            },
+            "contentName": "meta.embedded.bssembler",
+            "patterns": [
+                {
+                    "include": "source.bssembler"
+                }
+            ]
+        },
+        "expression": {
+            "patterns": [
+                {
+                    "include": "#variabel_assignment_or_initialization"
+                },
+                {
+                    "include": "#variable_declaration"
+                }
+            ]
+        },
+        "variabel_assignment_or_initialization": {
+            "patterns": [
+                {
+                    "include": "#variable_declaration_initialization"
+                },
+                {
+                    "include": "#variable_declaration_initialization_without_type"
+                },
+                {
+                    "include": "#variable_assignment"
+                },
+                {
+                    "include": "#variable_assignment_with_operator"
+                }
+            ]
+        },
+        "variable_declaration_initialization": {
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)(?=.*=)",
+            "name": "entity.variable.declaration.initialization.bslang",
+            "end": "(?<==.*)(;)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.type.let.bslang"
+                },
+                "2": {
+                    "name": "invalid.illegal.variable_name.declaration.initialization.bslang"
+                },
+                "3": {
+                    "name": "variable.name.local_variable.bslang"
+                },
+                "4": {
+                    "name": "punctuation.separator.colon.variable_type.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.variable.declaration.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "name": "entity.variable.declaration.initialization.type.bslang",
+                    "begin": "(?<=:)",
+                    "end": "(?==)",
+                    "patterns": [
+                        {
+                            "include": "#type"
+                        }
+                    ]
+                },
+                {
+                    "name": "entity.variable.declaration.initialization.value.bslang",
+                    "begin": "(?==)",
+                    "end": "(?=;)",
+                    "patterns": [
+                        {
+                            "begin": "(=)\\s*",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "keyword.operator.assignment.local_variable.initialization.bslang"
+                                }
+                            },
+                            "end": "(?=;)",
+                            "patterns": [
+                                {
+                                    "include": "#rvalue"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "variable_declaration_initialization_without_type": {
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(?==)",
+            "name": "entity.variable.declaration.initialization.without_type.bslang",
+            "end": "(;)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.type.let.bslang"
+                },
+                "2": {
+                    "name": "invalid.illegal.variable_name.declaration.initialization.without_type.bslang"
+                },
+                "3": {
+                    "name": "variable.name.local_variable.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.variable.declaration.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "name": "entity.variable.declaration.initialization.without_type.value.bslang",
+                    "begin": "(?==)",
+                    "end": "(?=;)",
+                    "patterns": [
+                        {
+                            "begin": "(=)\\s*",
+                            "beginCaptures": {
+                                "1": {
+                                    "name": "keyword.operator.assignment.local_variable.initialization.without_type.bslang"
+                                }
+                            },
+                            "end": "(?=;)",
+                            "patterns": [
+                                {
+                                    "include": "#rvalue"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "variable_declaration": {
+            "begin": "\\s*(let)\\s+(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(:)",
+            "name": "entity.variable.declaration.bslang",
+            "end": "(;)",
+            "beginCaptures": {
+                "1": {
+                    "name": "storage.type.let.bslang"
+                },
+                "2": {
+                    "name": "invalid.illegal.variable_name.variable.declaration.bslang"
+                },
+                "3": {
+                    "name": "variable.name.local_variable.bslang"
+                },
+                "4": {
+                    "name": "punctuation.separator.colon.variable_type.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.variable.declaration.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "variable_assignment": {
+            "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*))\\s*(=)\\s*",
+            "name": "entity.variable.assignment.bslang",
+            "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
+            "beginCaptures": {
+                "1": {
+                    "name": "variable.name.local_variable.bslang"
+                },
+                "2": {
+                    "name": "invalid.illegal.variable_name.variable.assignment.bslang"
+                },
+                "3": {
+                    "name": "keyword.operator.assignment.local_variable.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.variable.assigment.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
+                }
+            ]
+        },
+        "variable_assignment_with_operator": {
+            "patterns": [
+                {
+                    "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*)(@|!))\\s*(=)\\s*",
+                    "name": "entity.variable.assignment.with_operator.postfix.bslang",
+                    "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "variable.name.local_variable.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.variable_name.bslang"
+                        },
+                        "3": {
+                            "name": "keyword.operator.unary.postfix.assignment.bslang"
+                        },
+                        "4": {
+                            "name": "keyword.operator.assignment.local_variable.with_operator.postfix.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.variable.assigment.with_operator.postfix.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                },
+                {
+                    "begin": "\\s*(?!let\\s*)(?:(?:\\b(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)|([a-zA-Z_][a-zA-Z0-9_]*)(\\[)((?:\\d+_?)+)(\\]))\\s*(=)\\s*",
+                    "name": "entity.variable.assignment.with_operator.postfix.array_index.bslang",
+                    "end": "(;)|(?=(?:\\s+{$)|(?:\\){$))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "variable.name.local_variable.bslang"
+                        },
+                        "2": {
+                            "name": "invalid.illegal.variable_name.bslang"
+                        },
+                        "3": {
+                            "name": "meta.brace.square.operator.unary.postfix.array_index.assignment.begin.bslang"
+                        },
+                        "4": {
+                            "name": "constant.numeric.bslang"
+                        },
+                        "5": {
+                            "name": "meta.brace.square.operator.unary.postfix.array_index.assignment.end.bslang"
+                        },
+                        "6": {
+                            "name": "keyword.operator.assignment.local_variable.with_operator.array_index.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.variable.assigment.with_operator.postfix.array_index.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                }
+            ]
+        },
+        "controll_flow": {
+            "patterns": [
+                {
+                    "include": "#return_statement"
+                },
+                {
+                    "include": "#loop"
+                },
+                {
+                    "include": "#for_loop"
+                },
+                {
+                    "include": "#while_loop"
+                },
+                {
+                    "include": "#do_while_loop"
+                },
+                {
+                    "include": "#if_branch"
+                },
+                {
+                    "include": "#else_branch"
+                },
+                {
+                    "include": "#if_else_branch"
+                }
+            ]
+        },
+        "return_statement": {
+            "name": "entity.return.bslang",
+            "patterns": [
+                {
+                    "name": "entity.return.nothing.bslang",
+                    "match": "(?:(?:\\s*)|(?<=\\b))(return)\\s*(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.control.return.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.terminator.return.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.return.value.bslang",
+                    "begin": "(?:(?:\\s*)|(?<=\\b))(return)\\s+",
+                    "end": "(;)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "keyword.control.return.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.terminator.return.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                }
+            ]
+        },
+        "rvalue": {
+            "patterns": [
+                {
+                    "include": "#function_call"
+                },
+                {
+                    "include": "#operator"
+                },
+                {
+                    "include": "#literal"
+                },
+                {
+                    "include": "#identifier"
+                },
+                {
+                    "include": "#bracket_rvalue"
+                }
+            ]
+        },
+        "bracket_rvalue": {
+            "name": "entity.bracket.type.expression.bslang",
+            "begin": "\\s*(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.round.rvalue.expression.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.round.rvalue.expression.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
+                }
+            ]
+        },
+        "function_call": {
+            "patterns": [
+                {
+                    "include": "#special_function_call"
+                },
+                {
+                    "include": "#normal_function_call"
+                }
+            ]
+        },
+        "special_function_call": {
+            "patterns": [
+                {
+                    "include": "#type_size_builtin_function"
+                }
+            ]
+        },
+        "type_size_builtin_function": {
+            "name": "entity.function.call.builtin.type_size.bslang",
+            "begin": "(type_size)(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.function.call.builtin.type_size.bslang"
+                },
+                "2": {
+                    "name": "meta.brace.round.function_call.builtin.type_size.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.round.function_call.builtin.type_size.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#type"
+                }
+            ]
+        },
+        "normal_function_call": {
+            "patterns": [
+                {
+                    "name": "entity.namespace.usage.bslang",
+                    "match": "([a-z][a-zA-Z0-9_]*)(::)",
+                    "captures": {
+                        "1": {
+                            "name": "entity.name.namespace.usage.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.separator.namespace.access.bslang"
+                        }
+                    }
+                },
+                {
+                    "include": "#function_call_end"
+                }
+            ]
+        },
+        "function_call_end": {
+            "name": "entity.function.call.bslang",
+            "begin": "([a-z][a-zA-Z0-9_]*)(\\()",
+            "end": "(\\))",
+            "beginCaptures": {
+                "1": {
+                    "name": "entity.name.function.call.bslang"
+                },
+                "2": {
+                    "name": "meta.brace.round.function_call.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.round.function_call.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "begin": "(?<=\\()|(,)",
+                    "end": "(?=,|\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.function.arguments.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#rvalue"
+                        }
+                    ]
+                }
+            ]
+        },
+        "identifier": {
+            "name": "variable.name.bslang",
+            "match": "\\b(?!(loop|while|do|for|if|else if|else|import|let|function|break|continue|export|return|nothing|false|true|type|namespace|bsm)\\b)([a-z][a-zA-Z0-9_]*)\\b"
+        },
+        "loop": {
+            "begin": "\\s*(loop)\\s*({)",
+            "end": "\\s*(})",
+            "name": "entity.raw.loop.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.raw.loop.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.raw.loop.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.raw.loop.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#loop_body_content"
+                }
+            ]
+        },
+        "for_loop": {
+            "begin": "\\s*(for)(?=(?: |\\())",
+            "end": "\\s*(})",
+            "name": "entity.for.loop.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.for.loop.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.for.loop.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#for_loop_start"
+                },
+                {
+                    "include": "#loop_body"
+                }
+            ]
+        },
+        "for_loop_start": {
+            "begin": "(?<=for(?: |\\())",
+            "end": "(?<=[ \\)])({)",
+            "name": "entity.for.loop.start.bslang",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.for.loop.begin.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#for_loop_definition"
+                },
+                {
+                    "name": "entity.bracket.for.loop.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.for.loop.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.for.loop.expression.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#for_loop_definition"
+                        }
+                    ]
+                }
+            ]
+        },
+        "for_loop_definition": {
+            "patterns": [
+                {
+                    "begin": "(?<=for[ \\(])",
+                    "end": "(;)|(?<=for[ \\(].*let.*)",
+                    "name": "entity.for.loop.declaration.bslang",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.for.loop.declaration.end.bslan"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#variabel_assignment_or_initialization"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(?<=;)(?![^;]*{)",
+                    "end": "(;)",
+                    "name": "entity.for.loop.condition.bslang",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.comma.for.loop.condition.end.bslan"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#boolean_expression"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(?<=;.*)",
+                    "end": "(?<=[ \\)])(?={)",
+                    "name": "entity.for.loop.increment.bslang",
+
+                    "patterns": [
+                        {
+                            "include": "#variable_assignment"
+                        }
+                    ]
+                }
+            ]
+        },
+        "boolean_expression": {
+            "patterns": [
+                {
+                    "include": "#unary_prefix_operator_not"
+                },
+                {
+                    "include": "#builtin_boolean_literal"
+                },
+                {
+                    "include": "#literal"
+                },
+                { "include": "#binary_operator_compare" }
+            ]
+        },
+        "loop_keyword": {
+            "patterns": [
+                {
+                    "name": "entity.loop.continue.bslang",
+                    "match": "\\s*(continue)(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.control.loop.continue.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.terminator.loop.continue.bslang"
+                        }
+                    }
+                },
+                {
+                    "name": "entity.loop.break.bslang",
+                    "match": "\\s*(break)(;)",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.control.loop.break.bslang"
+                        },
+                        "2": {
+                            "name": "punctuation.terminator.loop.break.bslang"
+                        }
+                    }
+                }
+            ]
+        },
+        "loop_body": {
+            "begin": "(?<=[ \\)]{)",
+            "end": "(?=\\s*})",
+            "name": "entity.loop.body.bslang",
+            "patterns": [
+                {
+                    "include": "#loop_body_content"
+                }
+            ]
+        },
+        "loop_body_content": {
+            "patterns": [
+                {
+                    "include": "#loop_keyword"
+                },
+                {
+                    "include": "#block_content"
+                }
+            ]
+        },
+        "branch_content": {
+            "patterns": [
+                {
+                    "include": "#loop_keyword"
+                },
+                {
+                    "include": "#block_content"
+                }
+            ]
+        },
+        "while_loop": {
+            "begin": "\\s*(while)(?=(?: |\\())",
+            "end": "\\s*(})",
+            "name": "entity.while.loop.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.while.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.while.loop.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#while_loop_start"
+                },
+                {
+                    "include": "#loop_body"
+                }
+            ]
+        },
+        "while_loop_start": {
+            "begin": "(?<=while(?: |\\())",
+            "end": "(?<=[ \\)])({)",
+            "name": "entity.while.loop.start.bslang",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.while.loop.begin.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#while_loop_definition"
+                },
+                {
+                    "name": "entity.bracket.while.loop.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.while.loop.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.while.loop.expression.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#while_loop_definition"
+                        }
+                    ]
+                }
+            ]
+        },
+        "while_loop_definition": {
+            "begin": "(?<=while[ \\(])",
+            "end": "(?<=[ \\)])(?={)",
+            "name": "entity.while.loop.condition.bslang",
+            "patterns": [
+                {
+                    "include": "#boolean_expression"
+                }
+            ]
+        },
+        "do_while_loop": {
+            "begin": "\\s*(do)\\s*({)",
+            "end": "\\s*(;)",
+            "name": "entity.do.while.loop.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.do.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.do.while.loop.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.separator.comma.do.while.loop.condition.end.bslan"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#loop_body"
+                },
+                {
+                    "include": "#do_while_loop_end"
+                }
+            ]
+        },
+        "do_while_loop_end": {
+            "begin": "(})\\s*(while)",
+            "end": "(?=;)",
+            "name": "entity.while.loop.start.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "punctuation.definition.do.while.loop.end.bslang"
+                },
+                "2": {
+                    "name": "keyword.control.while.postfix.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#do_while_loop_definition"
+                },
+                {
+                    "name": "entity.bracket.while.loop.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.do.while.loop.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.do.while.loop.expression.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#do_while_loop_definition"
+                        }
+                    ]
+                }
+            ]
+        },
+        "do_while_loop_definition": {
+            "begin": "(?<=}\\s*while)",
+            "end": "(?=;)",
+            "name": "entity.do.while.loop.condition.bslang",
+            "patterns": [
+                {
+                    "include": "#boolean_expression"
+                }
+            ]
+        },
+        "if_branch": {
+            "begin": "(?<!else)\\s*(if)(?=(?: |\\())",
+            "end": "\\s*(})",
+            "name": "entity.if.branch.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.if.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.if.branch.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#if_branch_start"
+                },
+                {
+                    "include": "#branch_body"
+                }
+            ]
+        },
+        "else_branch": {
+            "begin": "(?<=}|^\\s*)\\s*(else)\\s*({)",
+            "end": "\\s*(})",
+            "name": "entity.else.branch.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.else.bslang"
+                },
+                "2": {
+                    "name": "punctuation.definition.else.branch.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.else.branch.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#branch_content"
+                }
+            ]
+        },
+        "if_else_branch": {
+            "begin": "(?<=}|^\\s*)\\s*(else if)(?=(?: |\\())",
+            "end": "\\s*(})",
+            "name": "entity.else.if.branch.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.else.if.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.else.if.branch.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#if_branch_start"
+                },
+                {
+                    "include": "#branch_body"
+                }
+            ]
+        },
+        "if_branch_start": {
+            "begin": "(?<=if(?: |\\())",
+            "end": "(?<=[ \\)])({)",
+            "name": "entity.if.branch.start.bslang",
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.if.branch.begin.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#if_branch_definition"
+                },
+                {
+                    "name": "entity.bracket.if.branch.expression.bslang",
+                    "begin": "(\\()",
+                    "end": "(\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.if.branch.expression.begin.bslang"
+                        }
+                    },
+                    "endCaptures": {
+                        "1": {
+                            "name": "meta.brace.round.if.branch.expression.end.bslang"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#if_branch_definition"
+                        }
+                    ]
+                }
+            ]
+        },
+        "if_branch_definition": {
+            "begin": "(?<=if[ \\(])",
+            "end": "(?<=[ \\)])(?={)",
+            "name": "entity.if.branch.condition.bslang",
+            "patterns": [
+                {
+                    "include": "#boolean_expression"
+                }
+            ]
+        },
+        "branch_body": {
+            "begin": "(?<=[ \\)]{)",
+            "end": "(?=\\s*})",
+            "name": "entity.branch.body.bslang",
+            "patterns": [
+                {
+                    "include": "#branch_content"
+                }
+            ]
+        },
+        "namespace": {
+            "begin": "(namespace)\\s+([a-z][a-zA-Z0-9_]*)\\s*({)",
+            "end": "\\s*(})",
+            "name": "entity.namespace.bslang",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.control.namespace.bslang"
+                },
+                "2": {
+                    "name": "entity.name.namespace.declaration.bslang"
+                },
+                "3": {
+                    "name": "punctuation.definition.namespace.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "punctuation.definition.namespace.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#import"
+                },
+                {
+                    "include": "#struct"
+                },
+                {
+                    "include": "#comment"
+                },
+                {
+                    "include": "#function"
+                },
+                {
+                    "include": "#namespace"
+                }
+            ]
+        },
+        "operator": {
+            "patterns": [
+                {
+                    "include": "#unary_operator"
+                },
+                {
+                    "include": "#binary_operator"
+                },
+                {
+                    "include": "#tertiary_operator"
+                }
+            ]
+        },
+        "unary_operator": {
+            "patterns": [
+                {
+                    "include": "#unary_prefix_operator"
+                },
+                {
+                    "include": "#unary_postfix_operator"
+                }
+            ]
+        },
+        "unary_prefix_operator": {
+            "patterns": [
+                {
+                    "include": "#unary_prefix_operator_numeric"
+                },
+                {
+                    "include": "#unary_prefix_operator_not"
+                }
+            ]
+        },
+        "unary_prefix_operator_numeric": {
+            "begin": "(\\+|\\-)",
+            "name": "entity.operator.unary_operator.prefix.numeric.bslang",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.unary.prefix.numeric.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
+                }
+            ]
+        },
+        "unary_prefix_operator_not": {
+            "begin": "(not)(?=\\s|\\b)",
+            "name": "entity.operator.unary_operator.prefix.not.bslang",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.unary.prefix.not.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#rvalue"
+                }
+            ]
+        },
+        "unary_postfix_operator": {
+            "patterns": [
+                {
+                    "include": "#unary_postfix_operator_pointer_access"
+                },
+                {
+                    "include": "#unary_postfix_operator_struct_access"
+                },
+                {
+                    "include": "#array_index_operator"
+                }
+            ]
+        },
+        "unary_postfix_operator_pointer_access": {
+            "begin": "(?=[^\n\\]]*(?:@|!)(?!'|=))",
+            "name": "entity.operator.unary_operator.postfix.pointer.access.bslang",
+            "end": "(@|!)",
+            "endCaptures": {
+                "1": {
+                    "name": "keyword.operator.unary.postfix.pointer.access.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#identifier"
+                },
+                {
+                    "include": "#rvalue"
+                },
+                {
+                    "include": "#unary_operator"
+                }
+            ]
+        },
+        "unary_postfix_operator_struct_access": {
+            "begin": "(\\.)(?=[a-z])",
+            "name": "entity.operator.unary_operator.postfix.struct.access.bslang",
+            "end": ".{0}",
+            "beginCaptures": {
+                "1": {
+                    "name": "keyword.operator.unary.postfix.struct.access.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#identifier"
+                }
+            ]
+        },
+        "array_index_operator": {
+            "begin": "(\\[)(?=(?:(?:\\d+_?)+)\\])",
+            "name": "entity.operator.unary_operator.postfix.array.index.bslang",
+            "end": "(\\])",
+            "beginCaptures": {
+                "1": {
+                    "name": "meta.brace.square.operator.unary.postfix.array.index.begin.bslang"
+                }
+            },
+            "endCaptures": {
+                "1": {
+                    "name": "meta.brace.square.operator.unary.postfix.array.index.end.bslang"
+                }
+            },
+            "patterns": [
+                {
+                    "include": "#decimal_literal"
+                }
+            ]
+        },
+        "binary_operator": {
+            "patterns": [
+                {
+                    "include": "#binary_operator_numeric"
+                },
+                {
+                    "include": "#binary_operator_bitwise"
+                },
+                {
+                    "include": "#binary_operator_compare"
+                }
+            ]
+        },
+        "binary_operator_numeric": {
+            "match": "(\\+|\\-|\\*|mod|/)",
+            "name": "keyword.operator.binary.numeric.bslang"
+        },
+        "binary_operator_bitwise": {
+            "match": "(and|or|xor|<<|>>)",
+            "name": "keyword.operator.binary.bitwise.bslang"
+        },
+        "binary_operator_compare": {
+            "match": "(>=|>|!=|==|<=|<)",
+            "name": "keyword.operator.binary.compare.bslang"
+        },
+
+        "tertiary_operator": {
+            "patterns": [
+                {
+                    "include": "#elvis_operator"
+                }
+            ]
+        },
+        "elvis_operator": {
+            "name": "entity.operator.tertiary_operator.elvis.bslang",
+            "patterns": [
+                {
+                    "match": "(\\?)",
+                    "name": "keyword.operator.tertiary.elvis.start.bslang"
+                },
+                {
+                    "match": "(:)",
+                    "name": "keyword.operator.tertiary.elvis.end.bslang"
+                }
+            ]
+        },
+        "string": {
+            "name": "string.quoted.double.bslang",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.bslang",
+                    "match": "\\\\."
+                }
+            ]
+        }
+    }
+}
