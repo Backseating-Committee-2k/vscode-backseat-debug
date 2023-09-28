@@ -55,7 +55,9 @@
         "publish": "vsce publish",
         "publish-pre-release": "vsce publish --pre-release",
         "vscode:prepublish": "rimraf dist && npm run -S esbuild-base -- --minify",
-        "test": "npm run typecheck"
+        "syntax-test": "npx vscode-tmgrammar-test './tests/*.bs' -g ./syntaxes/bslang.tmLanguage.json",
+        "generate-syntax-test-snapshot": "npx vscode-tmgrammar-snap --updateSnapshot './tests/*.bs' -g ./syntaxes/bslang.tmLanguage.json",
+        "test": "npm run typecheck && npm run syntax-test"
     },
     "devDependencies": {
         "@types/node": "^16.18.54",
@@ -67,10 +69,11 @@
         "await-notify": "^1.0.1",
         "esbuild": "^0.19.4",
         "eslint": "^8.50.0",
-        "typescript": "^5.2.2",
         "rimraf": "^5.0.5",
         "tmp-promise": "^3.0.3",
-        "vsce": "^2.15.0"
+        "typescript": "^5.2.2",
+        "vsce": "^2.15.0",
+        "vscode-tmgrammar-test": "^0.1.2"
     },
     "main": "./dist/extension.js",
     "activationEvents": [
@@ -91,6 +94,10 @@
             },
             {
                 "id": "bslang",
+                "aliases": [
+                    "Bslang",
+                    "Backseat Language"
+                ],
                 "extensions": [
                     ".bs"
                 ],
