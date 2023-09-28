@@ -1,16 +1,26 @@
 name: Run Tests
 on: [push, pull_request]
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: ['^16']
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn install --frozen-lockfile
-    - run: yarn test
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                config:
+                    ## use version for current vscode until the last supported version (^1.66.0)
+                    # see here: https://github.com/ewanharris/vscode-versions
+                    - name: Node 18 - VSCode >= 1.82.0
+                      node-version: 18
+                      vscode-version: "1.82.0"
+                    - name: Node 16 - VSCode  >= 1.66.0 && < 1.82.0
+                      node-version: 16
+                      vscode-version: "1.66.0"
+        name: ${{ join(matrix.config.name, ' - ') }}
+        steps:
+            - uses: actions/checkout@v1
+            - uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.config.node-version }}
+            - run: yarn install --frozen-lockfile
+            - run: yarn add -D "@types/vscode@${{ matrix.config.vscode-version }}"
+            - run: yarn test

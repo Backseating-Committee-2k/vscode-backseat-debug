@@ -1,3 +1,6 @@
+//TODO: update this file, some syntax chnaged, see https://github.com/mgerhold/kiddo/blob/main/test.bs
+
+
 import std.console;
 // a comment here :) 
 
