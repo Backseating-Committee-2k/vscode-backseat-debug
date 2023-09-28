@@ -6,7 +6,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: ['^16']
+        node-version:
+          ## use version for current vscode until the last supported version (^1.66.0)
+          #see here: https://github.com/ewanharris/vscode-versions
+          
+          - '16'
+          - '18'
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-node@v1
